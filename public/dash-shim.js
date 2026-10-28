@@ -48,8 +48,20 @@
       try {
         const res = await fetch(url);
         if (!res.ok) throw new Error('HTTP ' + res.status);
-        results.orders = unpack(await new Response(res.body.pipeThrough(new DecompressionStream('gzip'))).json());
-        calcs.forEach(({ id, def }) => { results[id] = def.fn(...def.inputs.map((i) => results[i])); });
+        if (url.endsWith('.bin')) {
+          results.orders = unpack(await new Response(res.body.pipeThrough(new DecompressionStream('gzip'))).json());
+          calcs.forEach(({ id, def }) => { results[id] = def.fn(...def.inputs.map((i) => results[i])); });
+        } else {
+          // Precomputed calc results from scripts/precompute.js
+          const KEY = { cube: ['month', 'subject', 'tier'], plans: ['month', 'plan'], carttype: ['month', 'cart_type'] };
+          Object.entries(await res.json()).forEach(([id, { c, r }]) => {
+            results[id] = r.map((v) => {
+              const o = Object.fromEntries(c.map((col, i) => [col, v[i]]));
+              o.k = KEY[id].map((col) => o[col]).join('|');
+              return o;
+            });
+          });
+        }
         status = 'ok';
       } catch (e) {
         status = 'error';
