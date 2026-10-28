@@ -1,13 +1,14 @@
 ﻿{
   "name": "ito-dashboard",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "ITO Olympiad orders & payments report (Excel) and static dashboard, built from the monthly order CSV exports.",
   "scripts": {
     "report": "node scripts/build.js . ITO_Payments_Report_Jun-Oct_2026.xlsx",
-    "data": "node scripts/export_orders.js . public/data/orders.json && node scripts/pack_orders.js",
-    "site": "node scripts/build_site.js",
-    "all": "npm run report && npm run data && npm run site"
+    "data": "node scripts/export_orders.js . public/data/orders.json",
+    "site": "node scripts/precompute.js && node scripts/build_site.js",
+    "test": "node scripts/test_calcs.js",
+    "all": "npm run report && npm run data && npm run test && npm run site"
   },
   "dependencies": {
     "exceljs": "4.4.0"

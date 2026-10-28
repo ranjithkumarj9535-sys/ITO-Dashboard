@@ -7,4 +7,5 @@ const page = fs.readFileSync(path.join(root, 'dashboard', 'page.html'), 'utf8').
 fs.mkdirSync(path.join(root, 'public'), { recursive: true });
 fs.writeFileSync(path.join(root, 'public', 'index.html'), shell.replace('<!-- PAGE -->', () => page));
 fs.copyFileSync(path.join(root, 'dashboard', 'dash-shim.js'), path.join(root, 'public', 'dash-shim.js'));
+fs.copyFileSync(path.join(root, 'dashboard', 'reports.js'), path.join(root, 'public', 'reports.js'));
 console.log('built public/index.html');

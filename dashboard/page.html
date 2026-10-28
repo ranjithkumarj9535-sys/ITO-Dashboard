@@ -1,71 +1,172 @@
 <meta name="dash-one-writer">
 <style>
-  .ito { display: grid; gap: var(--cds-gap-lg); font-family: var(--font-anthropic-sans); max-width: 82rem; margin-inline: auto; }
-  .ito-head h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; text-wrap: balance; }
-  .ito-head p { margin: var(--cds-gap-xs) 0 0; color: var(--color-fg-muted); max-width: 70ch; }
-  .ito-head .ito-take { color: var(--color-fg); }
+  /* Layout: hero band, pill tabs, sticky filter bar, then one panel per tab built from cards on an auto-fit grid. */
+  .ito { --ito-accent: #3366cc; --ito-accent-2: #e0861a; --ito-accent-3: #2a9d8f; --ito-tint: color-mix(in srgb, var(--ito-accent) 10%, transparent); --ito-tint-strong: color-mix(in srgb, var(--ito-accent) 22%, transparent);
+    display: grid; gap: var(--cds-gap-lg); font-family: var(--font-anthropic-sans); max-width: 84rem; margin-inline: auto; }
+  .ito-hero { display: flex; flex-wrap: wrap; gap: var(--cds-gap-md) var(--cds-gap-xl); align-items: end; justify-content: space-between; padding: var(--cds-pad-lg) var(--cds-pad-xl); border-radius: calc(var(--cds-radius) * 1.5); background: linear-gradient(135deg, var(--ito-tint-strong), var(--ito-tint) 55%, transparent); border: 1px solid var(--color-border-line); }
+  .ito-hero > div { min-width: 0; }
+  .ito-eyebrow { margin: 0; font-size: var(--cds-font-size-caption); letter-spacing: .08em; text-transform: uppercase; color: var(--color-fg-muted); }
+  .ito-hero h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: calc(var(--cds-font-size-title) * 1.25); line-height: 1.1; margin: var(--cds-gap-xs) 0 0; text-wrap: balance; }
+  .ito-hero .ito-lede { margin: var(--cds-gap-sm) 0 0; color: var(--color-fg-muted); max-width: 64ch; }
+  .ito-chips { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs); }
+  .ito-chip { font-size: var(--cds-font-size-caption); padding: 2px var(--cds-pad-sm); border-radius: 999px; border: 1px solid var(--color-border-line); background: var(--color-panel); color: var(--color-fg-muted); white-space: nowrap; }
+  .ito-chip.is-warn { color: var(--color-warn); }
+  .ito-take { margin: 0; font-size: var(--cds-font-size-body); max-width: 80ch; }
   .ito-take b { font-weight: 600; }
-  .ito-filters { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm) var(--cds-gap-md); align-items: end; }
-  .ito-filters label { display: grid; gap: var(--cds-gap-xs); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
-  .ito-filters select, .ito-filters button { font: inherit; font-size: var(--cds-font-size-body); color: var(--color-fg); background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-xs) var(--cds-pad-sm); min-width: 9rem; }
-  .ito-filters button { min-width: 0; cursor: pointer; }
+
+  .ito-tabs { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs); padding: 4px; border-radius: 999px; background: var(--color-panel); border: 1px solid var(--color-border-line); width: fit-content; max-width: 100%; }
+  .ito-tab { font: inherit; font-size: var(--cds-font-size-body); color: var(--color-fg-muted); background: none; border: 0; border-radius: 999px; padding: var(--cds-pad-xs) var(--cds-pad-md); cursor: pointer; white-space: nowrap; }
+  .ito-tab:hover { color: var(--color-fg); }
+  .ito-tab[aria-selected="true"] { color: var(--color-bg); background: var(--color-fg); font-weight: var(--cds-font-weight-medium); }
+  .ito-tab:focus-visible { outline: 2px solid var(--ito-accent); outline-offset: 2px; }
+  .ito-panel { display: grid; gap: var(--cds-gap-lg); }
+  .ito-panel[hidden] { display: none; }
+
+  .ito-filters { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 3; display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm) var(--cds-gap-md); align-items: end; padding: var(--cds-pad-sm) var(--cds-pad-md); background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); box-shadow: 0 4px 14px color-mix(in srgb, var(--color-fg) 6%, transparent); }
+  .ito-filters[hidden] { display: none; }
+  .ito-field { display: grid; gap: 2px; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .ito-filters select { font: inherit; font-size: var(--cds-font-size-body); color: var(--color-fg); background: var(--color-bg); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-xs) var(--cds-pad-sm); min-width: 9rem; }
   .ito-filters select:disabled { opacity: .55; }
-  .ito-filters select:focus-visible, .ito-filters button:focus-visible { outline: 2px solid var(--color-fg); outline-offset: 2px; }
-  .ito-scope { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
-  .ito-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); gap: var(--cds-gap-md); }
-  .ito-kpi { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md) var(--cds-pad-lg); display: grid; gap: var(--cds-gap-xs); align-content: start; }
+  .ito-seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); overflow: hidden; background: var(--color-bg); }
+  .ito-seg button { font: inherit; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); background: none; border: 0; border-right: 1px solid var(--color-border-line); padding: calc(var(--cds-pad-xs) + 2px) var(--cds-pad-sm); cursor: pointer; }
+  .ito-seg button:last-child { border-right: 0; }
+  .ito-seg button[aria-pressed="true"] { background: var(--ito-tint-strong); color: var(--color-fg); font-weight: 600; }
+  .ito-seg button:focus-visible, .ito-filters select:focus-visible, .ito-reset:focus-visible { outline: 2px solid var(--ito-accent); outline-offset: 1px; }
+  .ito-reset { font: inherit; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); background: none; border: 0; text-decoration: underline; cursor: pointer; padding: var(--cds-pad-xs); }
+  .ito-scope { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin-left: auto; }
+
+  .ito-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); gap: var(--cds-gap-md); }
+  .ito-kpi { position: relative; background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md) var(--cds-pad-lg); display: grid; gap: var(--cds-gap-xs); align-content: start; overflow: hidden; }
   .ito-kpi h3 { margin: 0; font-size: var(--cds-font-size-caption); font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); }
   .ito-kv { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); font-variant-numeric: tabular-nums; line-height: 1.1; }
   .ito-kpi.is-bad .ito-kv { color: var(--color-bad); }
+  .ito-spark { height: 34px; }
   .ito-sub { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
-  .ito-delta { font-variant-numeric: tabular-nums; font-weight: 600; }
-  .ito-delta.up { color: var(--color-ok); }
-  .ito-delta.down { color: var(--color-bad); }
-  .ito-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); gap: var(--cds-gap-md); }
+  .ito-delta { font-variant-numeric: tabular-nums; font-weight: 600; padding: 0 6px; border-radius: 999px; background: color-mix(in srgb, var(--color-fg) 6%, transparent); }
+  .ito-delta.up { color: var(--color-ok); background: color-mix(in srgb, var(--color-ok) 14%, transparent); }
+  .ito-delta.down { color: var(--color-bad); background: color-mix(in srgb, var(--color-bad) 14%, transparent); }
+
+  .ito-hls { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); gap: var(--cds-gap-md); }
+  .ito-hl { padding: var(--cds-pad-md) var(--cds-pad-lg); border-radius: var(--cds-radius); background: var(--ito-tint); border: 1px solid color-mix(in srgb, var(--ito-accent) 25%, var(--color-border-line)); display: grid; gap: 2px; }
+  .ito-hl h3 { margin: 0; font-size: var(--cds-font-size-caption); font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); text-transform: uppercase; letter-spacing: .06em; }
+  .ito-hl .big { font-family: var(--font-anthropic-serif); font-size: calc(var(--cds-font-size-heading) * 1.3); }
+  .ito-hl.is-bad { background: color-mix(in srgb, var(--color-bad) 9%, transparent); border-color: color-mix(in srgb, var(--color-bad) 30%, var(--color-border-line)); }
+
+  .ito-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr)); gap: var(--cds-gap-md); }
   .ito-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: grid; gap: var(--cds-gap-sm); align-content: start; min-width: 0; }
+  .ito-card.is-wide { grid-column: 1 / -1; }
+  .ito-card-head { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); align-items: start; justify-content: space-between; }
   .ito-card h2 { margin: 0; font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); }
-  .ito-card > p { margin: 0; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .ito-card p.note, .ito-card > p { margin: 0; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
   .ito-chart { position: relative; min-height: 260px; }
+  .ito-chart.is-tall { min-height: 300px; }
+  .ito-chart.is-short { min-height: 180px; }
   .ito-funnel { position: relative; min-height: 300px; display: grid; gap: var(--cds-gap-sm); align-content: start; }
   .ito-carts { position: relative; min-height: 170px; }
-  .ito-frow { display: grid; grid-template-columns: minmax(8rem, 12rem) 1fr; gap: var(--cds-gap-sm); align-items: center; font-size: var(--cds-font-size-caption); }
+  .ito-frow { display: grid; grid-template-columns: minmax(8rem, 13rem) 1fr; gap: var(--cds-gap-sm); align-items: center; font-size: var(--cds-font-size-caption); }
   .ito-frow .lab { color: var(--color-fg-muted); }
-  .ito-frow .bar { position: relative; height: 26px; }
-  .ito-frow .fill { height: 100%; border-radius: var(--cds-radius); background: var(--ito-c, var(--cds-chart-muted)); }
+  .ito-frow .bar { position: relative; height: 24px; }
+  .ito-frow .fill { height: 100%; border-radius: 4px; background: var(--ito-c, var(--cds-chart-muted)); }
   .ito-frow .val { position: absolute; top: 50%; transform: translateY(-50%); white-space: nowrap; font-variant-numeric: tabular-nums; color: var(--color-fg); }
   .ito-frow.bad .val { color: var(--color-bad); font-weight: 600; }
   .ito-fsep { font-size: var(--cds-font-size-caption); font-weight: var(--cds-font-weight-medium); margin-top: var(--cds-gap-sm); }
-  .ito-tip { position: absolute; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); white-space: nowrap; z-index: 2; }
+  .ito-tip { position: absolute; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); white-space: nowrap; z-index: 4; }
   .ito-tip .t { color: var(--cds-text-secondary); }
-  .ito-tip .sw { display: inline-block; width: .6rem; height: .6rem; border-radius: 2px; margin-right: .35rem; vertical-align: baseline; }
+  .ito-tip .sw { display: inline-block; width: .6rem; height: .6rem; border-radius: 2px; margin-right: .35rem; }
   .ito-legend { display: flex; flex-wrap: wrap; gap: var(--cds-gap-md); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
   .ito-legend span::before { content: ""; display: inline-block; width: .7rem; height: .7rem; border-radius: 2px; margin-right: .35rem; vertical-align: -1px; background: var(--ito-c); }
   .ito-legend .line::before { height: 2px; vertical-align: 3px; }
-  .ito-tablebox { max-height: 26rem; overflow: auto; }
+
+  .ito-matrix { overflow-x: auto; }
+  .ito-matrix table { border-collapse: separate; border-spacing: 4px; width: 100%; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+  .ito-matrix th { color: var(--color-fg-muted); font-weight: var(--cds-font-weight-medium); text-align: left; padding: 2px 4px; }
+  .ito-matrix td button { width: 100%; min-width: 5.5rem; font: inherit; color: var(--color-fg); border: 1px solid transparent; border-radius: 6px; padding: 6px; cursor: pointer; text-align: left; display: grid; gap: 1px; }
+  .ito-matrix td button .s { font-size: var(--cds-font-size-body); font-weight: 600; }
+  .ito-matrix td button .n { color: var(--color-fg-muted); }
+  .ito-matrix td button[aria-pressed="true"] { border-color: var(--color-fg); }
+  .ito-matrix td button:focus-visible { outline: 2px solid var(--ito-accent); }
+  .ito-matrix td.empty { color: var(--color-fg-muted); text-align: center; }
+
+  .ito-tablebox { max-height: 28rem; overflow: auto; }
   .ito-table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
-  .ito-table th { position: sticky; top: 0; background: var(--color-panel); text-align: right; font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); }
+  .ito-table th { position: sticky; top: 0; background: var(--color-panel); text-align: right; font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
+  .ito-table th.is-sort { cursor: pointer; user-select: none; }
+  .ito-table th.is-sort:hover { color: var(--color-fg); }
+  .ito-table th[aria-sort="descending"]::after { content: " ↓"; }
+  .ito-table th[aria-sort="ascending"]::after { content: " ↑"; }
   .ito-table td { text-align: right; padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); }
   .ito-table th:first-child, .ito-table td:first-child { text-align: left; }
+  .ito-table tbody tr:hover td { background: var(--ito-tint); }
   .ito-cellbar { display: inline-block; height: 6px; border-radius: 3px; background: var(--ito-c); margin-left: .4rem; vertical-align: middle; }
+  .ito-search { font: inherit; font-size: var(--cds-font-size-caption); color: var(--color-fg); background: var(--color-bg); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-xs) var(--cds-pad-sm); min-width: 12rem; }
+  .ito-search:focus-visible { outline: 2px solid var(--ito-accent); outline-offset: 1px; }
   .ito-notes ul { margin: 0; padding-left: 1.1rem; display: grid; gap: var(--cds-gap-xs); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); max-width: 90ch; }
   .ito-notes b { color: var(--color-fg); font-weight: 600; }
   [data-dash-source-state=empty] { color: transparent; }
   [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
-  @media (max-width: 30rem) { .ito-frow { grid-template-columns: 7rem 1fr; } }
+  .ito-btn { font: inherit; font-size: var(--cds-font-size-caption); color: var(--color-fg); background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-xs) var(--cds-pad-sm); cursor: pointer; white-space: nowrap; }
+  .ito-btn:hover:not(:disabled) { border-color: var(--color-fg-muted); }
+  .ito-btn:disabled { opacity: .5; cursor: default; }
+  .ito-btn:focus-visible { outline: 2px solid var(--color-fg); outline-offset: 2px; }
+  .ito-btn.is-primary { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
+  .ito-btn.is-quiet { color: var(--color-fg-muted); }
+  .ito-actions { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); align-items: center; }
+  .ito-actions[hidden], .ito-up [hidden], .ito-upresult [hidden] { display: none; }
+  .ito-drop { position: relative; display: grid; justify-items: center; gap: var(--cds-gap-xs); text-align: center; padding: var(--cds-pad-xl) var(--cds-pad-lg); border: 1.5px dashed var(--color-border-line); border-radius: var(--cds-radius); cursor: pointer; }
+  .ito-drop.is-over { border-color: var(--color-fg); background: var(--color-bg); }
+  .ito-drop:focus-within { outline: 2px solid var(--color-fg); outline-offset: 2px; }
+  .ito-drop input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+  .ito-drop-title { font-weight: var(--cds-font-weight-medium); }
+  .ito-opts { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm) var(--cds-gap-lg); align-items: center; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .ito-opts label { display: inline-flex; gap: var(--cds-gap-xs); align-items: center; }
+  .ito-opts select, .ito-gen-pick select { font: inherit; color: var(--color-fg); background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-xs) var(--cds-pad-sm); }
+  .ito-msg { margin: 0; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .ito-msg.bad { color: var(--color-bad); }
+  .ito-msg.ok { color: var(--color-ok); }
+  .ito-upresult { display: grid; gap: var(--cds-gap-md); }
+  .ito-uphead { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm) var(--cds-gap-lg); align-items: end; justify-content: space-between; }
+  .ito-uphead h2 { margin: 0; font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); overflow-wrap: anywhere; }
+  .ito-uphead p { margin: var(--cds-gap-xs) 0 0; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .ito-gen-pick { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm) var(--cds-gap-md); align-items: end; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .ito-gen-pick label { display: grid; gap: var(--cds-gap-xs); }
+  .ito-wide { overflow: auto; max-height: 26rem; }
+  .ito-wide .ito-table th, .ito-wide .ito-table td { white-space: nowrap; }
+  .ito-saved ul { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--cds-gap-xs); }
+  .ito-saved-item { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); align-items: center; justify-content: space-between; padding: var(--cds-pad-sm) 0; border-bottom: 1px solid var(--color-border-line); }
+  .ito-saved-item.is-open .ito-saved-name { font-weight: 600; }
+  .ito-saved-name { overflow-wrap: anywhere; }
+  .ito-saved-acts { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs); }
+  @media (max-width: 30rem) { .ito-frow { grid-template-columns: 7rem 1fr; } .ito-hero { padding: var(--cds-pad-md); } .ito-scope { margin-left: 0; } }
 </style>
 
 <div class="ito">
-  <header class="ito-head" id="top">
-    <h1>ITO orders &amp; payments</h1>
-    <p>Olympiad plan orders from 1 Jun to 27 Oct 2026, with test and internal accounts removed. The export has no order amounts, so this shows orders, students and plans, not revenue.</p>
-    <p class="ito-take">In this view, <b data-draw="kpi" data-source="cube" data-field="never_paid" data-fmt="int">—</b> students created an order but didn't pay, and payment succeeded on <b data-draw="kpi" data-source="cube" data-field="success" data-fmt="pct">—</b> of orders. Unpaid checkouts are the biggest drop-off, so following up on them is the first thing to fix.</p>
+  <header class="ito-hero" id="top">
+    <div>
+      <p class="ito-eyebrow">ITO Olympiad · Orders and payments</p>
+      <h1>ITO orders &amp; payments</h1>
+      <p class="ito-lede">Plan orders from 1 Jun to 27 Oct 2026, with test and internal accounts removed. The export has no order amounts, so this tracks orders, students and plans, not revenue.</p>
+    </div>
+    <div class="ito-chips" aria-label="About this data">
+      <span class="ito-chip">1 Jun – 27 Oct 2026</span>
+      <span class="ito-chip">Paid = status "captured"</span>
+      <span class="ito-chip is-warn">No revenue or channel data</span>
+    </div>
   </header>
 
+  <nav class="ito-tabs" role="tablist" aria-label="Pages">
+    <button type="button" class="ito-tab" role="tab" id="tab-overview" data-tab="overview" aria-controls="overview" aria-selected="true">Overview</button>
+    <button type="button" class="ito-tab" role="tab" id="tab-trends" data-tab="trends" aria-controls="trends" aria-selected="false" tabindex="-1">Trends</button>
+    <button type="button" class="ito-tab" role="tab" id="tab-conversion" data-tab="conversion" aria-controls="conversion" aria-selected="false" tabindex="-1">Funnel &amp; recovery</button>
+    <button type="button" class="ito-tab" role="tab" id="tab-products" data-tab="products" aria-controls="products" aria-selected="false" tabindex="-1">Plans &amp; products</button>
+    <button type="button" class="ito-tab" role="tab" id="tab-reports" data-tab="reports" aria-controls="reports" aria-selected="false" tabindex="-1">Upload &amp; download reports</button>
+    <button type="button" class="ito-tab" role="tab" id="tab-about" data-tab="about" aria-controls="about" aria-selected="false" tabindex="-1">How to read this</button>
+  </nav>
+
   <section class="ito-filters" id="filters" aria-label="Filters">
-    <label>Month
+    <label class="ito-field">Month
       <select class="ito-month" data-draw="month-select" data-source="cube" aria-label="Month"></select>
     </label>
-    <label>Product (subject)
+    <label class="ito-field">Product (subject)
       <select class="ito-subject" aria-label="Product (subject)">
         <option value="all">All subjects</option>
         <option value="Maths">Maths</option>
@@ -78,15 +179,15 @@
         <option value="NEET">NEET</option>
       </select>
     </label>
-    <label>Plan tier
-      <select class="ito-tier" aria-label="Plan tier">
-        <option value="all">All tiers</option>
-        <option value="Flexi">Flexi</option>
-        <option value="Smart">Smart</option>
-        <option value="Champion">Champion</option>
-      </select>
-    </label>
-    <label>Channel
+    <div class="ito-field">Plan tier
+      <div class="ito-seg" role="group" aria-label="Plan tier">
+        <button type="button" data-tier-pick="all" aria-pressed="true">All</button>
+        <button type="button" data-tier-pick="Flexi" aria-pressed="false">Flexi</button>
+        <button type="button" data-tier-pick="Smart" aria-pressed="false">Smart</button>
+        <button type="button" data-tier-pick="Champion" aria-pressed="false">Champion</button>
+      </div>
+    </div>
+    <label class="ito-field">Channel
       <select class="ito-channel" aria-label="Channel" disabled>
         <option>Not in the export</option>
       </select>
@@ -95,96 +196,360 @@
     <span class="ito-scope" data-draw="scope">—</span>
   </section>
 
-  <section class="ito-kpis" id="kpis" aria-label="Headline figures">
-    <div class="ito-kpi">
-      <h3>Paid orders</h3>
-      <div class="ito-kv" data-draw="kpi" data-source="cube" data-field="paid" data-fmt="int">—</div>
-      <div class="ito-sub"><span class="ito-delta" data-draw="delta" data-source="cube" data-field="paid_change" data-fmt="pct">—</span> vs previous month</div>
-    </div>
-    <div class="ito-kpi">
-      <h3>Payment success</h3>
-      <div class="ito-kv" data-draw="kpi" data-source="cube" data-field="success" data-fmt="pct">—</div>
-      <div class="ito-sub"><span class="ito-delta" data-draw="delta" data-source="cube" data-field="success_change" data-fmt="pp">—</span> vs previous month</div>
-    </div>
-    <div class="ito-kpi">
-      <h3>Order attempts</h3>
-      <div class="ito-kv" data-draw="kpi" data-source="cube" data-field="attempts" data-fmt="int">—</div>
-      <div class="ito-sub">Orders sent to the payment page</div>
-    </div>
-    <div class="ito-kpi">
-      <h3>Students who paid</h3>
-      <div class="ito-kv" data-draw="kpi" data-source="cube" data-field="payers" data-fmt="int">—</div>
-      <div class="ito-sub">of <span data-draw="kpi" data-source="cube" data-field="students" data-fmt="int">—</span> who reached checkout</div>
-    </div>
-    <div class="ito-kpi">
-      <h3>Student conversion</h3>
-      <div class="ito-kv" data-draw="kpi" data-source="cube" data-field="conversion" data-fmt="pct">—</div>
-      <div class="ito-sub">Paying students ÷ students at checkout</div>
-    </div>
-    <div class="ito-kpi is-bad">
-      <h3>Students who didn't pay</h3>
-      <div class="ito-kv" data-draw="kpi" data-source="cube" data-field="never_paid" data-fmt="int">—</div>
-      <div class="ito-sub">Win-back audience for this view</div>
-    </div>
+  <!-- ================= OVERVIEW ================= -->
+  <section class="ito-panel" id="overview" data-panel="overview" role="tabpanel" aria-labelledby="tab-overview">
+    <p class="ito-take">In this view, <b data-draw="kpi" data-source="cube" data-field="never_paid" data-fmt="int">—</b> students created an order but didn't pay, and <b data-draw="kpi" data-source="cube" data-field="success" data-fmt="pct">—</b> of orders were paid. Following up on unpaid checkouts is the biggest single lever.</p>
+
+    <section class="ito-actions" id="downloads" aria-label="Download this report">
+      <button type="button" class="ito-btn ito-dl-overview" disabled>Download report (Excel)</button>
+      <button type="button" class="ito-btn ito-dl-plans" disabled>Download plans (CSV)</button>
+      <span class="ito-scope">Downloads follow the filters above.</span>
+    </section>
+
+    <section class="ito-kpis" id="kpis" aria-label="Headline figures">
+      <div class="ito-kpi">
+        <h3>Paid orders</h3>
+        <div class="ito-kv" data-draw="kpi" data-source="cube" data-field="paid" data-fmt="int">—</div>
+        <div class="ito-sub"><span class="ito-delta" data-draw="delta" data-source="cube" data-field="paid_change" data-fmt="pct">—</span> vs previous month</div>
+        <div class="ito-spark" data-draw="spark" data-source="cube" data-field="paid"></div>
+      </div>
+      <div class="ito-kpi">
+        <h3>Payment success</h3>
+        <div class="ito-kv" data-draw="kpi" data-source="cube" data-field="success" data-fmt="pct">—</div>
+        <div class="ito-sub"><span class="ito-delta" data-draw="delta" data-source="cube" data-field="success_change" data-fmt="pp">—</span> vs previous month</div>
+        <div class="ito-spark" data-draw="spark" data-source="cube" data-field="success"></div>
+      </div>
+      <div class="ito-kpi">
+        <h3>Order attempts</h3>
+        <div class="ito-kv" data-draw="kpi" data-source="cube" data-field="attempts" data-fmt="int">—</div>
+        <div class="ito-sub">Orders sent to the payment page</div>
+        <div class="ito-spark" data-draw="spark" data-source="cube" data-field="attempts"></div>
+      </div>
+      <div class="ito-kpi">
+        <h3>Students who paid</h3>
+        <div class="ito-kv" data-draw="kpi" data-source="cube" data-field="payers" data-fmt="int">—</div>
+        <div class="ito-sub">of <span data-draw="kpi" data-source="cube" data-field="students" data-fmt="int">—</span> who reached checkout</div>
+        <div class="ito-spark" data-draw="spark" data-source="cube" data-field="payers"></div>
+      </div>
+      <div class="ito-kpi">
+        <h3>Student conversion</h3>
+        <div class="ito-kv" data-draw="kpi" data-source="cube" data-field="conversion" data-fmt="pct">—</div>
+        <div class="ito-sub">Paying students ÷ students at checkout</div>
+        <div class="ito-spark" data-draw="spark" data-source="cube" data-field="conversion"></div>
+      </div>
+      <div class="ito-kpi is-bad">
+        <h3>Students who didn't pay</h3>
+        <div class="ito-kv" data-draw="kpi" data-source="cube" data-field="never_paid" data-fmt="int">—</div>
+        <div class="ito-sub">Win-back audience for this view</div>
+        <div class="ito-spark" data-draw="spark" data-source="cube" data-field="never_paid"></div>
+      </div>
+    </section>
+
+    <section class="ito-hls" id="highlights" aria-label="Highlights">
+      <div class="ito-hl">
+        <h3>Best month</h3>
+        <div class="big" data-draw="hl" data-source="highlights" data-field="best_month" data-fmt="month">—</div>
+        <div class="ito-sub"><span data-draw="hl" data-source="highlights" data-field="best_paid" data-fmt="int">—</span> paid orders</div>
+      </div>
+      <div class="ito-hl is-bad">
+        <h3>Weakest payment month</h3>
+        <div class="big" data-draw="hl" data-source="highlights" data-field="low_month" data-fmt="month">—</div>
+        <div class="ito-sub"><span data-draw="hl" data-source="highlights" data-field="low_success" data-fmt="pct">—</span> of orders paid (months with 20+ orders)</div>
+      </div>
+      <div class="ito-hl">
+        <h3>Top plan</h3>
+        <div class="big" data-draw="hl" data-source="highlights" data-field="top_plan" data-fmt="text">—</div>
+        <div class="ito-sub"><span data-draw="hl" data-source="highlights" data-field="top_plan_paid" data-fmt="int">—</span> paid orders, all months</div>
+      </div>
+      <div class="ito-hl is-bad">
+        <h3>Unpaid orders never recovered</h3>
+        <div class="big" data-draw="kpi" data-source="cube" data-field="lost" data-fmt="int">—</div>
+        <div class="ito-sub">The student made no paid order on or after that day</div>
+      </div>
+    </section>
+
+    <section class="ito-grid">
+      <article class="ito-card" id="trend">
+        <div class="ito-card-head">
+          <h2>Month by month</h2>
+          <div class="ito-seg" role="group" aria-label="Measure">
+            <button type="button" data-metric="paid" aria-pressed="true">Paid orders</button>
+            <button type="button" data-metric="attempts" aria-pressed="false">Attempts</button>
+            <button type="button" data-metric="success" aria-pressed="false">Success %</button>
+            <button type="button" data-metric="payers" aria-pressed="false">Students paid</button>
+          </div>
+        </div>
+        <p class="note">Bars show the measure picked; the line is payment success. Click a bar to filter to that month. October runs to the 27th.</p>
+        <div class="ito-chart" data-draw="trend" data-source="cube"></div>
+      </article>
+      <article class="ito-card" id="matrix">
+        <h2>Subject × tier</h2>
+        <p class="note">Payment success and paid orders for each plan family in the month picked. Click a cell to filter the whole dashboard.</p>
+        <div class="ito-matrix" data-draw="matrix" data-source="cube"></div>
+      </article>
+    </section>
   </section>
 
-  <section class="ito-grid">
-    <article class="ito-card" id="trend">
-      <h2>Paid orders and payment success by month</h2>
-      <p>Bars are paid orders; the line is payment success (paid ÷ order attempts). October runs to the 27th only.</p>
-      <div class="ito-legend"><span class="bar" style="--ito-c: var(--ito-c1)">Paid orders</span><span class="line" style="--ito-c: var(--ito-c2)">Payment success</span></div>
-      <div class="ito-chart" data-draw="trend" data-source="cube"></div>
+  <!-- ================= TRENDS ================= -->
+  <section class="ito-panel" id="trends" data-panel="trends" role="tabpanel" aria-labelledby="tab-trends" hidden>
+    <article class="ito-card is-wide" id="daily">
+      <h2>Orders per day</h2>
+      <p class="note">Grey bars are order attempts, coloured bars are paid orders, and the line is the 7-day average of paid orders. Pick a month to zoom in.</p>
+      <div class="ito-legend"><span style="--ito-c: var(--cds-chart-muted)">Order attempts</span><span style="--ito-c: var(--ito-accent)">Paid orders</span><span class="line" style="--ito-c: var(--ito-accent-2)">7-day average paid</span></div>
+      <div class="ito-chart is-tall" data-draw="daily" data-source="daily"></div>
     </article>
-    <article class="ito-card" id="funnel">
-      <h2>Payment funnel</h2>
-      <p>Students are counted once each; the red bar is the biggest loss. Pending, attempted, created and failed orders never count as paid.</p>
-      <div class="ito-funnel" data-draw="funnel" data-source="cube"></div>
+    <section class="ito-grid">
+      <article class="ito-card" id="weekday">
+        <h2>Day of the week</h2>
+        <p class="note">Payment success by weekday and month; darker cells pay more often. The number is paid orders.</p>
+        <div class="ito-matrix" data-draw="weekday" data-source="weekday"></div>
+      </article>
+      <article class="ito-card" id="weekly">
+        <h2>Payment status by week</h2>
+        <p class="note">Every order by its payment status, all months. From 23 Oct the payment system used new unpaid statuses.</p>
+        <div class="ito-legend" data-draw="weekly-legend">—</div>
+        <div class="ito-chart" data-draw="weekly" data-source="weekly"></div>
+      </article>
+    </section>
+  </section>
+
+  <!-- ================= FUNNEL ================= -->
+  <section class="ito-panel" id="conversion" data-panel="conversion" role="tabpanel" aria-labelledby="tab-conversion" hidden>
+    <section class="ito-grid">
+      <article class="ito-card" id="funnel">
+        <h2>Payment funnel</h2>
+        <p class="note">Students are counted once each; the red bar is the biggest loss. Pending, attempted, created and failed orders never count as paid.</p>
+        <div class="ito-funnel" data-draw="funnel" data-source="cube"></div>
+      </article>
+      <article class="ito-card" id="unpaid">
+        <h2>What happened to unpaid orders</h2>
+        <p class="note">Recovered means the same student paid on or after that day. Repeat clicks are the same student re-ordering the same cart on the same day.</p>
+        <div class="ito-funnel" data-draw="unpaid" data-source="cube"></div>
+      </article>
+    </section>
+    <article class="ito-card is-wide" id="retry">
+      <h2>Orders per student</h2>
+      <p class="note">Students grouped by how many orders they created in this view, and the share of each group that paid. Students who try three or more times are high-intent but hitting a problem.</p>
+      <div class="ito-chart is-short" data-draw="retry" data-source="retry"></div>
     </article>
   </section>
 
-  <section class="ito-grid">
-    <article class="ito-card" id="plans">
-      <h2>Plans</h2>
-      <p>Each plan counted once per order that contains it, for the month picked. Sorted by paid orders.</p>
+  <!-- ================= PRODUCTS ================= -->
+  <section class="ito-panel" id="products" data-panel="products" role="tabpanel" aria-labelledby="tab-products" hidden>
+    <article class="ito-card is-wide" id="plans">
+      <div class="ito-card-head">
+        <h2>Plans</h2>
+        <input type="search" class="ito-search ito-plan-search" id="plan-search" placeholder="Search plans" aria-label="Search plans">
+      </div>
+      <p class="note">Each plan counted once per order that contains it, for the month picked. Click a column to sort.</p>
       <div class="ito-tablebox">
-        <table class="ito-table" data-source="plans" data-row-key="k">
-          <thead><tr><th data-field="plan">Plan</th><th data-field="attempts">Orders</th><th data-field="paid">Paid</th><th data-field="success">Payment success</th><th data-field="share">Share of paid plans</th></tr></thead>
+        <table class="ito-table ito-plan-table" data-source="plans" data-row-key="k">
+          <thead><tr><th data-field="plan" class="is-sort" data-sort="plan">Plan</th><th data-field="attempts" class="is-sort" data-sort="attempts">Orders</th><th data-field="paid" class="is-sort" data-sort="paid" aria-sort="descending">Paid</th><th data-field="success" class="is-sort" data-sort="success">Payment success</th><th data-field="share" class="is-sort" data-sort="share">Share of paid plans</th></tr></thead>
           <tbody data-draw="plan-rows"></tbody>
         </table>
       </div>
     </article>
-    <article class="ito-card" id="cart-types">
-      <h2>Payment success by cart type</h2>
-      <p>Orders holding only Flexi plans pay least often. Follows the month filter.</p>
-      <div class="ito-carts" data-draw="carts" data-source="carttype"></div>
+    <section class="ito-grid">
+      <article class="ito-card" id="cart-types">
+        <h2>Payment success by cart type</h2>
+        <p class="note">Orders holding only Flexi plans pay least often. Follows the month filter.</p>
+        <div class="ito-carts" data-draw="carts" data-source="carttype"></div>
+      </article>
+      <article class="ito-card" id="addons">
+        <h2>Flexi add-ons</h2>
+        <p class="note">Share of paid Flexi orders that include each add-on, for the month and subject picked.</p>
+        <div class="ito-carts" data-draw="addons" data-source="addons"></div>
+      </article>
+    </section>
+    <article class="ito-card is-wide" id="combos">
+      <h2>Most-bought cart combinations</h2>
+      <p class="note">Exact carts for the month picked, limited to carts with a plan matching the subject and tier filters. Top 15 by paid orders.</p>
+      <div class="ito-tablebox">
+        <table class="ito-table" data-source="combos" data-row-key="k">
+          <thead><tr><th data-field="cart">Cart</th><th data-field="attempts">Orders</th><th data-field="paid">Paid</th><th data-field="success">Payment success</th><th data-field="share">Share of paid orders</th></tr></thead>
+          <tbody data-draw="combo-rows"></tbody>
+        </table>
+      </div>
     </article>
   </section>
 
-  <section class="ito-card ito-notes" id="notes">
-    <h2>How to read this</h2>
-    <ul>
-      <li><b>Paid</b> means the payment status is "captured". Pending, attempted, created and failed orders are unpaid.</li>
-      <li><b>Payment success</b> = paid orders ÷ order attempts. <b>Student conversion</b> = students with at least one paid order ÷ students with at least one order.</li>
-      <li><b>Students who didn't pay</b> counts students with no paid order inside the selected month, subject and tier.</li>
-      <li>The <b>subject and tier</b> filters keep orders that contain a matching plan. A mixed cart can appear under more than one subject.</li>
-      <li><b>Revenue, discounts and refunds</b> are not shown: the export has no amount, coupon or refund columns.</li>
-      <li><b>Channel</b> can't be filtered: the export has no channel, campaign or UTM columns.</li>
-      <li>Test and internal accounts were removed, and plan labels were made consistent. Names, emails and phone numbers are not in this dashboard.</li>
-      <li>On 23 Oct the payment system started using new unpaid statuses (attempted, created, failed) in place of "pending".</li>
-    </ul>
+  <!-- ================= REPORTS (upload & download) ================= -->
+  <section class="ito-panel" id="reports" data-panel="reports" role="tabpanel" aria-labelledby="tab-reports" hidden>
+    <article class="ito-card ito-up" id="upload">
+      <h2>Upload a report</h2>
+      <p>Add an order export from the website (CSV or Excel .xlsx) to get the same reports as the dashboard, then download them. Several monthly files are combined into one report. Any other spreadsheet gets a column summary and a group-by table.</p>
+      <label class="ito-drop">
+        <input type="file" class="ito-file" accept=".csv,.tsv,.txt,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" multiple>
+        <span class="ito-drop-title">Choose files or drop them here</span>
+        <span class="ito-sub">CSV or .xlsx · one or more files</span>
+      </label>
+      <div class="ito-opts">
+        <label><input type="checkbox" class="ito-keeptest"> Keep test and internal accounts</label>
+        <label data-up-sheets hidden>Sheet <select data-draw="up-sheet" aria-label="Sheet"></select></label>
+      </div>
+      <p class="ito-msg" data-up-msg="reading" hidden>Reading your file…</p>
+      <p class="ito-msg bad" data-up-msg="error" hidden><span data-draw="up-error">—</span></p>
+      <p class="ito-msg bad" data-up-msg="xls" hidden>Old .xls files can't be read here. Open it in Excel, save it as .xlsx or CSV, and upload it again.</p>
+      <p class="ito-msg">Your file is read in your own browser and isn't uploaded anywhere. Only a summary is kept, and only if you choose "Save to dashboard".</p>
+    </article>
+
+    <div class="ito-upresult" id="upload-result" data-up-view="ito" hidden>
+      <div class="ito-uphead">
+        <div>
+          <h2>Report: <span data-draw="up-name">—</span></h2>
+          <p data-draw="up-meta">—</p>
+          <p data-up-needs="savedview" hidden>Saved report: the order rows and the follow-up list aren't kept, so those downloads need the original file.</p>
+        </div>
+        <button type="button" class="ito-btn is-quiet ito-clear">Close report</button>
+      </div>
+      <div class="ito-actions">
+        <button type="button" class="ito-btn is-primary" data-dl="ito-xlsx">Download report (Excel)</button>
+        <button type="button" class="ito-btn" data-dl="ito-month">Months (CSV)</button>
+        <button type="button" class="ito-btn" data-dl="ito-plans">Plans (CSV)</button>
+        <button type="button" class="ito-btn" data-dl="ito-carts">Cart types (CSV)</button>
+        <button type="button" class="ito-btn" data-dl="ito-orders" data-up-needs="rows">Cleaned orders (CSV)</button>
+        <button type="button" class="ito-btn" data-dl="ito-follow" data-up-needs="rows">Unpaid follow-up list (CSV)</button>
+        <button type="button" class="ito-btn ito-save" data-up-needs="save" hidden>Save to dashboard</button>
+        <span class="ito-msg" data-up-save="saving" hidden>Saving…</span>
+        <span class="ito-msg ok" data-up-save="saved" hidden>Saved. Everyone with access can open it under Saved reports.</span>
+        <span class="ito-msg bad" data-up-save="failed" hidden>Couldn't save. Saving needs edit access to this dashboard.</span>
+        <span class="ito-msg" data-up-needs="noedit" hidden>Ask an editor of this dashboard to save it for the team.</span>
+      </div>
+      <p class="ito-msg" data-up-needs="rows">The follow-up list holds the names, emails and phone numbers from your file, for calling back students who didn't pay. It is only saved to your computer.</p>
+      <section class="ito-kpis" aria-label="Headline figures for the uploaded file">
+        <div class="ito-kpi"><h3>Paid orders</h3><div class="ito-kv" data-draw="up-kpi" data-field="paid" data-fmt="int">—</div><div class="ito-sub">of <span data-draw="up-kpi" data-field="attempts" data-fmt="int">—</span> order attempts</div></div>
+        <div class="ito-kpi"><h3>Payment success</h3><div class="ito-kv" data-draw="up-kpi" data-field="success" data-fmt="pct">—</div><div class="ito-sub">Paid ÷ order attempts</div></div>
+        <div class="ito-kpi"><h3>Students who paid</h3><div class="ito-kv" data-draw="up-kpi" data-field="payers" data-fmt="int">—</div><div class="ito-sub">of <span data-draw="up-kpi" data-field="students" data-fmt="int">—</span> who reached checkout</div></div>
+        <div class="ito-kpi"><h3>Student conversion</h3><div class="ito-kv" data-draw="up-kpi" data-field="conversion" data-fmt="pct">—</div><div class="ito-sub">Paying students ÷ students at checkout</div></div>
+        <div class="ito-kpi is-bad"><h3>Students who didn't pay</h3><div class="ito-kv" data-draw="up-kpi" data-field="never_paid" data-fmt="int">—</div><div class="ito-sub">The follow-up list</div></div>
+        <div class="ito-kpi"><h3>Test rows removed</h3><div class="ito-kv" data-draw="up-kpi" data-field="removed" data-fmt="int">—</div><div class="ito-sub">Test and internal accounts</div></div>
+      </section>
+      <article class="ito-card">
+        <h2>By month</h2>
+        <p>Same measures as the dashboard. Paid means the payment status is "captured".</p>
+        <div class="ito-wide">
+          <table class="ito-table">
+            <thead><tr><th>Month</th><th>Order attempts</th><th>Paid orders</th><th>Payment success</th><th>Pending</th><th>Attempted / created / failed</th><th>Students at checkout</th><th>Students who paid</th><th>Student conversion</th><th>Didn't pay</th></tr></thead>
+            <tbody data-draw="up-month-rows"></tbody>
+          </table>
+        </div>
+      </article>
+      <section class="ito-grid">
+        <article class="ito-card">
+          <h2>Plans</h2>
+          <p>Each plan counted once per order that contains it. Sorted by paid orders.</p>
+          <div class="ito-tablebox">
+            <table class="ito-table">
+              <thead><tr><th>Plan</th><th>Orders</th><th>Paid</th><th>Payment success</th><th>Share of paid plans</th></tr></thead>
+              <tbody data-draw="up-plan-rows"></tbody>
+            </table>
+          </div>
+        </article>
+        <article class="ito-card">
+          <h2>Cart types</h2>
+          <p>Orders grouped by the plan tiers in the cart.</p>
+          <table class="ito-table">
+            <thead><tr><th>Cart type</th><th>Order attempts</th><th>Paid orders</th><th>Payment success</th></tr></thead>
+            <tbody data-draw="up-cart-rows"></tbody>
+          </table>
+        </article>
+      </section>
+    </div>
+
+    <div class="ito-upresult" data-up-view="generic" hidden>
+      <div class="ito-uphead">
+        <div>
+          <h2>Report: <span data-draw="up-name">—</span></h2>
+          <p data-draw="up-meta">—</p>
+          <p>This file isn't an order export, so it gets a general summary.</p>
+        </div>
+        <button type="button" class="ito-btn is-quiet ito-clear">Close report</button>
+      </div>
+      <div class="ito-actions">
+        <button type="button" class="ito-btn is-primary" data-dl="gen-xlsx">Download report (Excel)</button>
+        <button type="button" class="ito-btn" data-dl="gen-csv" data-up-needs="rows">All rows (CSV)</button>
+        <button type="button" class="ito-btn" data-dl="gen-cols-csv">Column summary (CSV)</button>
+        <button type="button" class="ito-btn ito-save" data-up-needs="save" hidden>Save to dashboard</button>
+        <span class="ito-msg" data-up-save="saving" hidden>Saving…</span>
+        <span class="ito-msg ok" data-up-save="saved" hidden>Saved. Everyone with access can open it under Saved reports.</span>
+        <span class="ito-msg bad" data-up-save="failed" hidden>Couldn't save. Saving needs edit access to this dashboard.</span>
+        <span class="ito-msg" data-up-needs="noedit" hidden>Ask an editor of this dashboard to save it for the team.</span>
+      </div>
+      <article class="ito-card">
+        <h2>Group and count</h2>
+        <p>Pick a column to count rows by, and optionally a number column to add up.</p>
+        <div class="ito-gen-pick">
+          <label>Group by <select data-draw="gen-by" aria-label="Group by"></select></label>
+          <label>Add up <select data-draw="gen-sum" aria-label="Add up"></select></label>
+          <button type="button" class="ito-btn" data-dl="gen-group-csv">Download this table (CSV)</button>
+        </div>
+        <div class="ito-tablebox ito-gen-group-box"><table class="ito-table" data-draw="gen-group"></table></div>
+      </article>
+      <article class="ito-card">
+        <h2>Columns</h2>
+        <p>What each column holds. Totals and ranges are shown for number columns.</p>
+        <div class="ito-wide">
+          <table class="ito-table">
+            <thead><tr><th>Column</th><th>Type</th><th>Filled</th><th>Empty</th><th>Distinct values</th><th>Total</th><th>Lowest</th><th>Highest</th></tr></thead>
+            <tbody data-draw="gen-cols"></tbody>
+          </table>
+        </div>
+      </article>
+      <article class="ito-card" data-up-needs="rows">
+        <h2>First 50 rows</h2>
+        <p>A preview of the file as it was read.</p>
+        <div class="ito-wide"><table class="ito-table" data-draw="gen-preview"></table></div>
+      </article>
+    </div>
+
+    <article class="ito-card ito-saved" id="saved">
+      <h2>Saved reports</h2>
+      <p>Reports the team saved to this dashboard: summary tables only, with no names, emails or phone numbers. Open one to view it, or download it as Excel.</p>
+      <p class="ito-msg" data-saved-state="loading">Loading saved reports…</p>
+      <p class="ito-msg" data-saved-state="empty" hidden>No saved reports yet. Upload a file above, then choose "Save to dashboard".</p>
+      <p class="ito-msg" data-saved-state="off" hidden>Saved reports aren't available in this view.</p>
+      <ul data-draw="saved-list"></ul>
+    </article>
+  </section>
+
+  <!-- ================= ABOUT ================= -->
+  <section class="ito-panel" id="about" data-panel="about" role="tabpanel" aria-labelledby="tab-about" hidden>
+    <section class="ito-card ito-notes" id="notes">
+      <h2>How to read this</h2>
+      <ul>
+        <li><b>Paid</b> means the payment status is "captured". Pending, attempted, created and failed orders are unpaid.</li>
+        <li><b>Payment success</b> = paid orders ÷ order attempts. <b>Student conversion</b> = students with at least one paid order ÷ students with at least one order.</li>
+        <li><b>Students who didn't pay</b> counts students with no paid order inside the selected month, subject and tier.</li>
+        <li><b>Recovered</b> unpaid orders: the same student paid on or after that day, in any subject. <b>Never recovered</b>: they didn't, as far as this data goes (it ends on 27 Oct).</li>
+        <li>The <b>subject and tier</b> filters keep orders that contain a matching plan. A mixed cart can appear under more than one subject.</li>
+        <li><b>Add-ons</b> are the Flexi products in an order beyond the plan itself (certificates, previous-year papers, workbooks, test banks, monthly olympiads).</li>
+        <li><b>Revenue, discounts and refunds</b> are not shown: the export has no amount, coupon or refund columns. <b>Channel</b> can't be filtered: there are no channel, campaign or UTM columns.</li>
+        <li>Test and internal accounts were removed, and plan labels were made consistent. Names, emails and phone numbers are not in this dashboard.</li>
+        <li>On 23 Oct the payment system started using new unpaid statuses (attempted, created, failed) in place of "pending".</li>
+      </ul>
+    </section>
   </section>
 </div>
 
 <script>
   dash.calc('cube', {
     title: 'Orders by month, subject and tier',
-    description: 'Order, payment and student counts for every month, subject and plan tier, plus "all" for each. Paid = status captured.',
+    description: 'Order, payment, student and recovery counts for every month, subject and plan tier, plus "all" for each. Paid = status captured.',
     inputs: ['orders'],
     fn: (orders) => {
       const list = orders.map((o) => ({
-        student: String(o.student), month: o.month, status: o.status, txn: Number(o.txn), paid: Number(o.paid) === 1,
+        student: String(o.student), month: o.month, date: o.date, cart: o.cart, status: o.status, txn: Number(o.txn), paid: Number(o.paid) === 1,
         items: o.cart.split(' + ').map((p) => { const w = p.split(' '); return { subject: w[0], tier: w[1] }; }),
       }));
+      const byStudent = new Map();
+      list.forEach((o) => { if (!byStudent.has(o.student)) byStudent.set(o.student, []); byStudent.get(o.student).push(o); });
+      const seen = new Set();
+      [...list].sort((a, b) => a.txn - b.txn).forEach((o) => {
+        const key = o.student + '|' + o.cart + '|' + o.date;
+        o.repeat = !o.paid && seen.has(key);
+        seen.add(key);
+        o.recovered = !o.paid && byStudent.get(o.student).some((x) => x.paid && x.date >= o.date);
+      });
       const months = [...new Set(list.map((o) => o.month))].sort();
       const out = [];
       for (const s of ['all', 'Maths', 'Science', 'English', 'GK', 'Computer', 'Social', 'JEE', 'NEET']) {
@@ -200,6 +565,7 @@
             const paidRows = rows.filter((x) => x.o.paid);
             const paid = paidRows.length;
             const pending = rows.filter((x) => x.o.status === 'pending').length;
+            const recovered = rows.filter((x) => x.o.recovered).length;
             const students = first.size;
             const payers = new Set(paidRows.map((x) => x.o.student)).size;
             const firstTry = [...first.values()].filter((o) => o.paid).length;
@@ -209,6 +575,8 @@
               other_unpaid: attempts - paid - pending, students, payers, conversion: students ? payers / students : null,
               first_try: firstTry, after_retry: payers - firstTry, never_paid: students - payers,
               plans_sold: paidRows.reduce((a, x) => a + x.units, 0),
+              multi_paid: paidRows.filter((x) => x.o.items.length > 1).length,
+              recovered, lost: attempts - paid - recovered, repeat_clicks: rows.filter((x) => x.o.repeat).length,
               paid_change: m !== 'all' && prevPaid ? paid / prevPaid - 1 : null,
               success_change: m !== 'all' && prevSuccess !== null && success !== null ? success - prevSuccess : null,
             });
@@ -260,6 +628,183 @@
       return out;
     },
   });
+
+  dash.calc('daily', {
+    title: 'Orders per day',
+    description: 'Order attempts and paid orders per calendar day for every subject and plan tier choice, with the 7-day average of paid orders.',
+    inputs: ['orders'],
+    fn: (orders) => {
+      const list = orders.map((o) => ({ date: o.date, paid: Number(o.paid) === 1, items: o.cart.split(' + ').map((p) => p.split(' ')) }));
+      const dates = [...new Set(list.map((o) => o.date))].sort();
+      const days = [];
+      for (let d = new Date(dates[0] + 'T00:00:00Z'); d <= new Date(dates[dates.length - 1] + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + 1)) days.push(d.toISOString().slice(0, 10));
+      const out = [];
+      for (const s of ['all', 'Maths', 'Science', 'English', 'GK', 'Computer', 'Social', 'JEE', 'NEET']) {
+        for (const t of ['all', 'Flexi', 'Smart', 'Champion']) {
+          const att = new Map(), pd = new Map();
+          list.forEach((o) => {
+            if (!o.items.some((w) => (s === 'all' || w[0] === s) && (t === 'all' || w[1] === t))) return;
+            att.set(o.date, (att.get(o.date) || 0) + 1);
+            if (o.paid) pd.set(o.date, (pd.get(o.date) || 0) + 1);
+          });
+          if (!att.size) continue;
+          days.forEach((day, i) => {
+            const win = days.slice(Math.max(0, i - 6), i + 1);
+            out.push({ k: s + '|' + t + '|' + day, subject: s, tier: t, date: day, month: day.slice(0, 7), attempts: att.get(day) || 0, paid: pd.get(day) || 0, paid_7d: win.reduce((a, d) => a + (pd.get(d) || 0), 0) / win.length });
+          });
+        }
+      }
+      return out;
+    },
+  });
+
+  dash.calc('weekday', {
+    title: 'Orders by day of the week',
+    description: 'Order attempts, paid orders and payment success by weekday (Monday first), for every month, subject and plan tier choice.',
+    inputs: ['orders'],
+    fn: (orders) => {
+      const list = orders.map((o) => ({ month: o.month, wd: (new Date(o.date + 'T00:00:00Z').getUTCDay() + 6) % 7, paid: Number(o.paid) === 1, items: o.cart.split(' + ').map((p) => p.split(' ')) }));
+      const months = ['all', ...[...new Set(list.map((o) => o.month))].sort()];
+      const names = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      const out = [];
+      for (const s of ['all', 'Maths', 'Science', 'English', 'GK', 'Computer', 'Social', 'JEE', 'NEET']) {
+        for (const t of ['all', 'Flexi', 'Smart', 'Champion']) {
+          const sel = list.filter((o) => o.items.some((w) => (s === 'all' || w[0] === s) && (t === 'all' || w[1] === t)));
+          if (!sel.length) continue;
+          for (const m of months) {
+            for (let wd = 0; wd < 7; wd++) {
+              const rows = sel.filter((o) => o.wd === wd && (m === 'all' || o.month === m));
+              const paid = rows.filter((o) => o.paid).length;
+              out.push({ k: m + '|' + s + '|' + t + '|' + wd, month: m, subject: s, tier: t, weekday: wd, day: names[wd], attempts: rows.length, paid, success: rows.length ? paid / rows.length : null });
+            }
+          }
+        }
+      }
+      return out;
+    },
+  });
+
+  dash.calc('weekly', {
+    title: 'Payment status by week',
+    description: 'Orders per week (weeks start on Monday) split by payment status, for every subject and plan tier choice.',
+    inputs: ['orders'],
+    fn: (orders) => {
+      const week = (date) => { const d = new Date(date + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7)); return d.toISOString().slice(0, 10); };
+      const list = orders.map((o) => ({ week: week(o.date), status: o.status, items: o.cart.split(' + ').map((p) => p.split(' ')) }));
+      const out = [];
+      for (const s of ['all', 'Maths', 'Science', 'English', 'GK', 'Computer', 'Social', 'JEE', 'NEET']) {
+        for (const t of ['all', 'Flexi', 'Smart', 'Champion']) {
+          const by = new Map();
+          list.forEach((o) => {
+            if (!o.items.some((w) => (s === 'all' || w[0] === s) && (t === 'all' || w[1] === t))) return;
+            const r = by.get(o.week) || { captured: 0, pending: 0, attempted: 0, created: 0, failed: 0 };
+            r[o.status] = (r[o.status] || 0) + 1;
+            by.set(o.week, r);
+          });
+          [...by.keys()].sort().forEach((w) => {
+            const r = by.get(w);
+            out.push({ k: s + '|' + t + '|' + w, subject: s, tier: t, week: w, ...r, total: r.captured + r.pending + r.attempted + r.created + r.failed });
+          });
+        }
+      }
+      return out;
+    },
+  });
+
+  dash.calc('retry', {
+    title: 'Orders per student',
+    description: 'Students grouped by how many orders they created (1, 2, 3, 4, 5 or more), and how many in each group paid, for every month, subject and plan tier choice.',
+    inputs: ['orders'],
+    fn: (orders) => {
+      const list = orders.map((o) => ({ student: String(o.student), month: o.month, paid: Number(o.paid) === 1, items: o.cart.split(' + ').map((p) => p.split(' ')) }));
+      const months = ['all', ...[...new Set(list.map((o) => o.month))].sort()];
+      const out = [];
+      for (const s of ['all', 'Maths', 'Science', 'English', 'GK', 'Computer', 'Social', 'JEE', 'NEET']) {
+        for (const t of ['all', 'Flexi', 'Smart', 'Champion']) {
+          const sel = list.filter((o) => o.items.some((w) => (s === 'all' || w[0] === s) && (t === 'all' || w[1] === t)));
+          if (!sel.length) continue;
+          for (const m of months) {
+            const per = new Map();
+            sel.filter((o) => m === 'all' || o.month === m).forEach((o) => {
+              const r = per.get(o.student) || { n: 0, paid: false };
+              r.n++; r.paid = r.paid || o.paid;
+              per.set(o.student, r);
+            });
+            ['1', '2', '3', '4', '5+'].forEach((b, i) => {
+              const group = [...per.values()].filter((r) => (i < 4 ? r.n === i + 1 : r.n >= 5));
+              const paid = group.filter((r) => r.paid).length;
+              out.push({ k: m + '|' + s + '|' + t + '|' + b, month: m, subject: s, tier: t, orders: b, students: group.length, paid_students: paid, paid_share: group.length ? paid / group.length : null });
+            });
+          }
+        }
+      }
+      return out;
+    },
+  });
+
+  dash.calc('combos', {
+    title: 'Cart combinations',
+    description: 'Each exact cart (set of plans in one order) with its order attempts, paid orders, payment success and share of the month\'s paid orders, per month and for all months.',
+    inputs: ['orders'],
+    fn: (orders) => {
+      const out = [];
+      for (const m of ['all', ...[...new Set(orders.map((o) => o.month))].sort()]) {
+        const rows = orders.filter((o) => m === 'all' || o.month === m);
+        const allPaid = rows.filter((o) => Number(o.paid) === 1).length;
+        const by = new Map();
+        rows.forEach((o) => { const r = by.get(o.cart) || { attempts: 0, paid: 0 }; r.attempts++; if (Number(o.paid) === 1) r.paid++; by.set(o.cart, r); });
+        by.forEach((r, c) => out.push({ k: m + '|' + c, month: m, cart: c, plans: c.split(' + ').length, attempts: r.attempts, paid: r.paid, success: r.paid / r.attempts, share: allPaid ? r.paid / allPaid : 0 }));
+      }
+      return out;
+    },
+  });
+
+  dash.calc('addons', {
+    title: 'Flexi add-ons',
+    description: 'For each add-on type, paid orders that include it and its share of paid orders with a Flexi plan, per month and subject.',
+    inputs: ['orders'],
+    fn: (orders) => {
+      const typeOf = (p) => (/Certificate/.test(p) ? 'Certificate' : /Previous Year/.test(p) ? 'Previous-year papers' : /eWorkbook/.test(p) ? 'eWorkbook'
+        : /Test Bank|Practice Test/.test(p) ? 'Online test bank' : /Monthly Olympiad/.test(p) ? 'Monthly olympiad (1 year)' : /Olympiad Exam/.test(p) ? 'Olympiad exam' : 'Other');
+      const subjectOf = (p) => p.split(' ')[0];
+      const paid = orders.filter((o) => Number(o.paid) === 1).map((o) => ({ month: o.month, plans: o.cart.split(' + '), products: o.addons ? o.addons.split(' ; ') : [] }));
+      const types = ['Olympiad exam', 'Certificate', 'Previous-year papers', 'eWorkbook', 'Online test bank', 'Monthly olympiad (1 year)'];
+      const out = [];
+      for (const m of ['all', ...[...new Set(orders.map((o) => o.month))].sort()]) {
+        for (const s of ['all', 'Maths', 'Science', 'English', 'GK', 'Computer', 'Social', 'JEE', 'NEET']) {
+          const flexi = paid.filter((o) => (m === 'all' || o.month === m) && o.plans.some((p) => / Flexi /.test(p) && (s === 'all' || p.split(' ')[0] === s)));
+          if (!flexi.length) continue;
+          types.forEach((type) => {
+            const n = flexi.filter((o) => o.products.some((p) => typeOf(p) === type && (s === 'all' || subjectOf(p) === s))).length;
+            out.push({ k: m + '|' + s + '|' + type, month: m, subject: s, addon: type, paid_orders: n, flexi_paid: flexi.length, attach: n / flexi.length });
+          });
+        }
+      }
+      return out;
+    },
+  });
+
+  dash.calc('highlights', {
+    title: 'Highlights',
+    description: 'For each subject and tier choice: the month with the most paid orders, the month with the lowest payment success (20+ orders), and the plan with the most paid orders.',
+    inputs: ['cube', 'plans'],
+    fn: (cube, plans) => {
+      const out = [];
+      for (const s of ['all', 'Maths', 'Science', 'English', 'GK', 'Computer', 'Social', 'JEE', 'NEET']) {
+        for (const t of ['all', 'Flexi', 'Smart', 'Champion']) {
+          const ms = cube.filter((r) => r.subject === s && r.tier === t && r.month !== 'all' && r.attempts > 0);
+          if (!ms.length) continue;
+          const best = ms.reduce((a, r) => (r.paid > a.paid ? r : a));
+          const big = ms.filter((r) => r.attempts >= 20);
+          const low = big.length ? big.reduce((a, r) => (r.success < a.success ? r : a)) : null;
+          const ps = plans.filter((r) => r.month === 'all' && (s === 'all' || r.subject === s) && (t === 'all' || r.tier === t));
+          const top = ps.length ? ps.reduce((a, r) => (r.paid > a.paid ? r : a)) : null;
+          out.push({ k: s + '|' + t, subject: s, tier: t, best_month: best.month, best_paid: best.paid, low_month: low ? low.month : null, low_success: low ? low.success : null, top_plan: top ? top.plan : null, top_plan_paid: top ? top.paid : null });
+        }
+      }
+      return out;
+    },
+  });
 </script>
 
 <script>
@@ -270,35 +815,75 @@
     const SHORT = { '2026-06': 'Jun', '2026-07': 'Jul', '2026-08': 'Aug', '2026-09': 'Sep', '2026-10': 'Oct*' };
     const p = () => {
       const q = dash.params();
-      return { month: q.month || 'all', subject: q.subject || 'all', tier: q.tier || 'all' };
+      return { month: q.month || 'all', subject: q.subject || 'all', tier: q.tier || 'all', metric: q.metric || 'paid' };
     };
     const enc = (v) => String(v).replace(/%/g, '%25').replace(/&/g, '%26').replace(/=/g, '%3D');
     const fmt = (v, kind) => {
       if (v === null || v === undefined || Number.isNaN(v)) return '—';
       if (kind === 'pct') return fmtPct(v);
       if (kind === 'pp') return (v > 0 ? '+' : '') + d3.format('.1f')(v * 100) + ' pts';
+      if (kind === 'month') return MONTHS[v] || v;
+      if (kind === 'text') return String(v);
       return fmtInt(v);
     };
     const color = (el, name) => getComputedStyle(el).getPropertyValue(name).trim();
-    return { fmtInt, fmtPct, MONTHS, SHORT, p, enc, fmt, color };
+    // Tooltip inside a drawing: lines are [colour|null, label, value]
+    const tip = (el) => {
+      const t = document.createElement('div');
+      t.className = 'ito-tip';
+      t.hidden = true;
+      el.append(t);
+      return {
+        show(event, title, lines) {
+          t.replaceChildren();
+          const h = document.createElement('div'); h.className = 't'; h.textContent = title; t.append(h);
+          lines.forEach(([c0, n, v]) => {
+            const line = document.createElement('div');
+            if (c0) { const sw = document.createElement('span'); sw.className = 'sw'; sw.style.background = c0; line.append(sw); }
+            line.append(n + ': ' + v);
+            t.append(line);
+          });
+          t.hidden = false;
+          const [mx, my] = d3.pointer(event, el);
+          t.style.left = Math.max(0, Math.min(el.clientWidth - t.offsetWidth, mx + 12)) + 'px';
+          t.style.top = Math.max(0, my - t.offsetHeight - 8) + 'px';
+        },
+        hide() { t.hidden = true; },
+      };
+    };
+    const textWidth = (svg, text) => { const n = svg.append('text').attr('font-size', 12).text(text); const w = n.node().getComputedTextLength(); n.remove(); return w; };
+    return { fmtInt, fmtPct, MONTHS, SHORT, p, enc, fmt, color, tip, textWidth };
   })();
 </script>
 
 <script>
-  const { p, enc, fmt, MONTHS, SHORT, fmtInt, fmtPct } = window.ito;
-  document.querySelector('.ito')?.style.setProperty('--ito-c1', dash.colors[0]);
-  document.querySelector('.ito')?.style.setProperty('--ito-c2', dash.colors[1]);
+  const { p, enc, fmt, MONTHS, SHORT, fmtInt, fmtPct, tip, textWidth } = window.ito;
+  const C = dash.colors;
+  document.querySelectorAll('.ito').forEach((root) => {
+    root.style.setProperty('--ito-accent', C[0]);
+    root.style.setProperty('--ito-accent-2', C[1]);
+    root.style.setProperty('--ito-accent-3', C[2]);
+  });
 
-  const setDefaults = () => dash.setParams({ month: 'all', subject: 'all', tier: 'all' });
+  const setDefaults = () => dash.setParams({ month: 'all', subject: 'all', tier: 'all', metric: 'paid' });
 
   document.querySelectorAll('.ito-subject').forEach((sel) => sel.addEventListener('change', () => dash.setParams({ subject: sel.value })));
-  document.querySelectorAll('.ito-tier').forEach((sel) => sel.addEventListener('change', () => dash.setParams({ tier: sel.value })));
+  document.querySelectorAll('[data-tier-pick]').forEach((b) => b.addEventListener('click', () => dash.setParams({ tier: b.dataset.tierPick })));
+  document.querySelectorAll('[data-metric]').forEach((b) => b.addEventListener('click', () => dash.setParams({ metric: b.dataset.metric })));
   document.querySelectorAll('.ito-reset').forEach((b) => b.addEventListener('click', () => { dash.resetParams(); setDefaults(); }));
+
+  // The filters only apply to the dashboard tabs.
+  const syncFilters = (name) => {
+    document.querySelectorAll('.ito-filters').forEach((f) => { f.hidden = name === 'reports' || name === 'about'; });
+  };
+  document.querySelectorAll('[data-tab]').forEach((t) => t.addEventListener('click', () => syncFilters(t.dataset.tab)));
+  syncFilters(location.hash.slice(1));
 
   dash.onData(() => {
     const q = p();
     document.querySelectorAll('.ito-subject').forEach((sel) => { sel.value = q.subject; });
-    document.querySelectorAll('.ito-tier').forEach((sel) => { sel.value = q.tier; });
+    document.querySelectorAll('[data-tier-pick]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.tierPick === q.tier)));
+    document.querySelectorAll('[data-metric]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.metric === q.metric)));
   });
 
   const cubeRow = (key) => {
@@ -306,6 +891,7 @@
     return c.status === 'ok' ? c.data.find((r) => r.k === key) : null;
   };
   const keyNow = () => { const q = p(); return q.month + '|' + q.subject + '|' + q.tier; };
+  const matchPlan = (plan, q) => { const w = plan.split(' '); return (q.subject === 'all' || w[0] === q.subject) && (q.tier === 'all' || w[1] === q.tier); };
 
   dash.draw('month-select', (sel) => {
     const c = dash.data('cube');
@@ -334,137 +920,321 @@
     el.setAttribute('data-where', 'k=' + enc(key));
     const r = cubeRow(key);
     const v = r ? r[el.dataset.field] : null;
-    el.classList.toggle('up', v !== null && v > 0);
-    el.classList.toggle('down', v !== null && v < 0);
+    el.classList.toggle('up', v !== null && v !== undefined && v > 0);
+    el.classList.toggle('down', v !== null && v !== undefined && v < 0);
     el.textContent = v === null || v === undefined ? (p().month === 'all' ? 'Pick a month' : '—') : (el.dataset.fmt === 'pct' ? (v > 0 ? '+' : '') + fmtPct(v) : fmt(v, 'pp'));
+  });
+
+  dash.draw('spark', (el) => {
+    el.replaceChildren();
+    const c = dash.data('cube');
+    if (c.status !== 'ok') return;
+    const q = p(), f = el.dataset.field;
+    const rows = c.data.filter((r) => r.subject === q.subject && r.tier === q.tier && r.month !== 'all' && r[f] !== null).sort((a, b) => (a.month < b.month ? -1 : 1));
+    if (rows.length < 2) return;
+    const W = Math.max(120, el.clientWidth), H = 34;
+    const x = d3.scalePoint(rows.map((r) => r.month), [4, W - 4]);
+    const ext = d3.extent(rows, (r) => r[f]);
+    const y = d3.scaleLinear(ext[0] === ext[1] ? [0, ext[1] || 1] : ext, [H - 5, 5]);
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('aria-hidden', 'true');
+    const color = el.closest('.is-bad') ? 'var(--color-bad)' : C[0];
+    const area = d3.area((r) => x(r.month), H - 1, (r) => y(r[f]));
+    svg.append('path').datum(rows).attr('d', area).attr('fill', color).attr('opacity', 0.12);
+    svg.append('path').datum(rows).attr('d', d3.line((r) => x(r.month), (r) => y(r[f]))).attr('fill', 'none').attr('stroke', color).attr('stroke-width', 2).attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round');
+    svg.selectAll('circle').data(rows.filter((r) => r.month === q.month || (q.month === 'all' && r === rows[rows.length - 1]))).join('circle')
+      .attr('cx', (r) => x(r.month)).attr('cy', (r) => y(r[f])).attr('r', 3.5).attr('fill', color);
+  });
+
+  dash.draw('hl', (el) => {
+    const q = p();
+    const key = q.subject + '|' + q.tier;
+    el.setAttribute('data-where', 'k=' + enc(key));
+    const d = dash.data('highlights');
+    const r = d.status === 'ok' ? d.data.find((x) => x.k === key) : null;
+    el.textContent = r ? fmt(r[el.dataset.field], el.dataset.fmt) : '—';
   });
 
   dash.draw('trend', (el) => {
     el.replaceChildren();
     const c = dash.data('cube');
     if (c.status !== 'ok') return;
-    const q = p();
+    const q = p(), metric = q.metric;
+    const isRate = metric === 'success';
+    const label = { paid: 'Paid orders', attempts: 'Order attempts', success: 'Payment success', payers: 'Students who paid' }[metric];
     const rows = c.data.filter((r) => r.subject === q.subject && r.tier === q.tier && r.month !== 'all').sort((a, b) => (a.month < b.month ? -1 : 1));
     const W = Math.max(280, el.clientWidth), H = 260;
-    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Paid orders and payment success by month');
-    const maxPaid = d3.max(rows, (r) => r.paid) || 1;
-    const y = d3.scaleLinear([0, maxPaid * 1.15], [H - 28, 14]).nice();
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', label + ' by month');
+    const y = isRate ? d3.scaleLinear([0, 1], [H - 28, 14]) : d3.scaleLinear([0, (d3.max(rows, (r) => r[metric]) || 1) * 1.15], [H - 28, 14]).nice();
     const y2 = d3.scaleLinear([0, 1], [H - 28, 14]);
-    const probe = svg.append('text').attr('font-size', 12).text(fmtInt(y.domain()[1]));
-    const left = probe.node().getComputedTextLength() + 12;
-    probe.remove();
-    const probe2 = svg.append('text').attr('font-size', 12).text('100%');
-    const right = probe2.node().getComputedTextLength() + 12;
-    probe2.remove();
+    const tickFmt = isRate ? d3.format('.0%') : fmtInt;
+    const left = textWidth(svg, tickFmt(y.domain()[1])) + 12;
+    const right = isRate ? 12 : textWidth(svg, '100%') + 12;
     const x = d3.scaleBand(rows.map((r) => r.month), [left, W - right]).padding(0.35);
     const muted = 'var(--color-fg-muted)';
-    svg.append('g').selectAll('line').data(y.ticks(4)).join('line')
-      .attr('x1', left).attr('x2', W - right).attr('y1', (d) => y(d)).attr('y2', (d) => y(d))
-      .attr('stroke', 'var(--cds-chart-grid)').attr('stroke-width', 1);
-    svg.append('g').selectAll('text').data(y.ticks(4)).join('text')
-      .attr('x', left - 6).attr('y', (d) => y(d)).attr('dy', '0.32em').attr('text-anchor', 'end')
-      .attr('font-size', 12).attr('fill', muted).text((d) => fmtInt(d));
-    svg.append('g').selectAll('text').data([0, 0.25, 0.5, 0.75, 1]).join('text')
-      .attr('x', W - right + 6).attr('y', (d) => y2(d)).attr('dy', '0.32em')
-      .attr('font-size', 12).attr('fill', muted).text((d) => d3.format('.0%')(d));
-    svg.append('g').selectAll('text').data(rows).join('text')
-      .attr('x', (r) => x(r.month) + x.bandwidth() / 2).attr('y', H - 8).attr('text-anchor', 'middle')
-      .attr('font-size', 12).attr('fill', muted).text((r) => SHORT[r.month] || r.month);
-    const bw = Math.min(32, x.bandwidth());
+    svg.append('g').selectAll('line').data(y.ticks(4)).join('line').attr('x1', left).attr('x2', W - right).attr('y1', (d) => y(d)).attr('y2', (d) => y(d)).attr('stroke', 'var(--cds-chart-grid)');
+    svg.append('g').selectAll('text').data(y.ticks(4)).join('text').attr('x', left - 6).attr('y', (d) => y(d)).attr('dy', '0.32em').attr('text-anchor', 'end').attr('font-size', 12).attr('fill', muted).text((d) => tickFmt(d));
+    if (!isRate) svg.append('g').selectAll('text').data([0, 0.5, 1]).join('text').attr('x', W - right + 6).attr('y', (d) => y2(d)).attr('dy', '0.32em').attr('font-size', 12).attr('fill', muted).text((d) => d3.format('.0%')(d));
+    svg.append('g').selectAll('text').data(rows).join('text').attr('x', (r) => x(r.month) + x.bandwidth() / 2).attr('y', H - 8).attr('text-anchor', 'middle').attr('font-size', 12).attr('fill', muted).text((r) => SHORT[r.month] || r.month);
+    const bw = Math.min(36, x.bandwidth());
+    const val = (r) => r[metric] || 0;
     svg.append('g').selectAll('rect').data(rows).join('rect')
-      .attr('x', (r) => x(r.month) + (x.bandwidth() - bw) / 2).attr('width', bw)
-      .attr('y', (r) => y(r.paid)).attr('height', (r) => y(0) - y(r.paid)).attr('rx', 3)
-      .attr('fill', dash.colors[0]).attr('opacity', (r) => (q.month === 'all' || q.month === r.month ? 1 : 0.35));
-    svg.append('g').selectAll('text').data(rows).join('text')
-      .attr('x', (r) => x(r.month) + x.bandwidth() / 2).attr('y', (r) => y(r.paid) - 6).attr('text-anchor', 'middle')
-      .attr('font-size', 12).attr('fill', 'var(--color-fg)').text((r) => fmtInt(r.paid));
-    const pts = rows.filter((r) => r.success !== null);
-    svg.append('path').datum(pts)
-      .attr('d', d3.line((r) => x(r.month) + x.bandwidth() / 2, (r) => y2(r.success)))
-      .attr('fill', 'none').attr('stroke', dash.colors[1]).attr('stroke-width', 2).attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round');
-    svg.append('g').selectAll('circle').data(pts).join('circle')
-      .attr('cx', (r) => x(r.month) + x.bandwidth() / 2).attr('cy', (r) => y2(r.success)).attr('r', 3.5)
-      .attr('fill', dash.colors[1]);
-    const tip = document.createElement('div');
-    tip.className = 'ito-tip';
-    tip.hidden = true;
-    el.append(tip);
+      .attr('x', (r) => x(r.month) + (x.bandwidth() - bw) / 2).attr('width', bw).attr('y', (r) => y(val(r))).attr('height', (r) => y(0) - y(val(r))).attr('rx', 4)
+      .attr('fill', isRate ? C[1] : C[0]).attr('opacity', (r) => (q.month === 'all' || q.month === r.month ? 1 : 0.35));
+    svg.append('g').selectAll('text').data(rows).join('text').attr('x', (r) => x(r.month) + x.bandwidth() / 2).attr('y', (r) => y(val(r)) - 6).attr('text-anchor', 'middle').attr('font-size', 12).attr('fill', 'var(--color-fg)').text((r) => fmt(r[metric], isRate ? 'pct' : 'int'));
+    if (!isRate) {
+      const pts = rows.filter((r) => r.success !== null);
+      svg.append('path').datum(pts).attr('d', d3.line((r) => x(r.month) + x.bandwidth() / 2, (r) => y2(r.success))).attr('fill', 'none').attr('stroke', C[1]).attr('stroke-width', 2).attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round');
+      svg.append('g').selectAll('circle').data(pts).join('circle').attr('cx', (r) => x(r.month) + x.bandwidth() / 2).attr('cy', (r) => y2(r.success)).attr('r', 3.5).attr('fill', C[1]);
+    }
+    const tt = tip(el);
     svg.append('g').selectAll('rect').data(rows).join('rect')
-      .attr('x', (r) => x(r.month)).attr('width', x.bandwidth()).attr('y', 0).attr('height', H - 24)
-      .attr('fill', 'transparent').style('cursor', 'pointer')
-      .on('mousemove', (event, r) => {
-        tip.replaceChildren();
-        const t = document.createElement('div'); t.className = 't'; t.textContent = MONTHS[r.month] || r.month; tip.append(t);
-        [[dash.colors[0], 'Paid orders', fmtInt(r.paid)], [dash.colors[1], 'Payment success', fmt(r.success, 'pct')], [null, 'Order attempts', fmtInt(r.attempts)], [null, 'Students who paid', fmtInt(r.payers)]].forEach(([c0, n, v]) => {
-          const line = document.createElement('div');
-          if (c0) { const sw = document.createElement('span'); sw.className = 'sw'; sw.style.background = c0; line.append(sw); }
-          line.append(n + ': ' + v); tip.append(line);
-        });
-        tip.hidden = false;
-        const [mx, my] = d3.pointer(event, el);
-        const tw = tip.offsetWidth;
-        tip.style.left = Math.max(0, Math.min(el.clientWidth - tw, mx + 12)) + 'px';
-        tip.style.top = Math.max(0, my - 60) + 'px';
-      })
-      .on('mouseleave', () => { tip.hidden = true; })
+      .attr('x', (r) => x(r.month)).attr('width', x.bandwidth()).attr('y', 0).attr('height', H - 24).attr('fill', 'transparent').style('cursor', 'pointer')
+      .on('mousemove', (event, r) => tt.show(event, MONTHS[r.month] || r.month, [[C[0], 'Paid orders', fmtInt(r.paid)], [C[1], 'Payment success', fmt(r.success, 'pct')], [null, 'Order attempts', fmtInt(r.attempts)], [null, 'Students who paid', fmtInt(r.payers)]]))
+      .on('mouseleave', () => tt.hide())
       .on('click', (event, r) => dash.setParams({ month: p().month === r.month ? 'all' : r.month }));
   });
+
+  dash.draw('matrix', (el) => {
+    el.replaceChildren();
+    const c = dash.data('cube');
+    if (c.status !== 'ok') return;
+    const q = p();
+    const subjects = [['Maths', 'Maths'], ['Science', 'Science'], ['English', 'English'], ['GK', 'GK'], ['Computer', 'Computer'], ['Social', 'Social Studies'], ['JEE', 'JEE'], ['NEET', 'NEET']];
+    const tiers = ['Flexi', 'Smart', 'Champion'];
+    const accent = C[0];
+    const table = document.createElement('table');
+    const head = table.createTHead().insertRow();
+    ['', ...tiers].forEach((t) => { const th = document.createElement('th'); th.textContent = t; head.append(th); });
+    const body = table.createTBody();
+    subjects.forEach(([s, name]) => {
+      const tr = body.insertRow();
+      const th = document.createElement('th'); th.textContent = name; tr.append(th);
+      tiers.forEach((t) => {
+        const td = tr.insertCell();
+        const r = c.data.find((x) => x.k === q.month + '|' + s + '|' + t);
+        if (!r || !r.attempts) { td.className = 'empty'; td.textContent = '·'; return; }
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.setAttribute('aria-pressed', String(q.subject === s && q.tier === t));
+        b.setAttribute('aria-label', name + ' ' + t + ': ' + fmt(r.success, 'pct') + ' paid, ' + fmtInt(r.paid) + ' paid orders');
+        const pct = Math.round((r.success || 0) * 60);
+        b.style.background = 'color-mix(in srgb, ' + accent + ' ' + pct + '%, transparent)';
+        const s1 = document.createElement('span'); s1.className = 's'; s1.textContent = fmt(r.success, 'pct');
+        const s2 = document.createElement('span'); s2.className = 'n'; s2.textContent = fmtInt(r.paid) + ' of ' + fmtInt(r.attempts);
+        b.append(s1, s2);
+        b.onclick = () => { const on = q.subject === s && q.tier === t; dash.setParams(on ? { subject: 'all', tier: 'all' } : { subject: s, tier: t }); };
+        td.append(b);
+      });
+    });
+    el.append(table);
+  });
+
+  dash.draw('daily', (el) => {
+    el.replaceChildren();
+    const d = dash.data('daily');
+    if (d.status !== 'ok') return;
+    const q = p();
+    const rows = d.data.filter((r) => r.subject === q.subject && r.tier === q.tier && (q.month === 'all' || r.month === q.month));
+    if (!rows.length) return;
+    const W = Math.max(280, el.clientWidth), H = 300;
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Orders per day');
+    const parse = (s) => new Date(s + 'T00:00:00Z');
+    const y = d3.scaleLinear([0, (d3.max(rows, (r) => r.attempts) || 1) * 1.1], [H - 26, 10]).nice();
+    const left = textWidth(svg, fmtInt(y.domain()[1])) + 12;
+    const x = d3.scaleBand(rows.map((r) => r.date), [left, W - 10]).padding(0.15);
+    svg.append('g').selectAll('line').data(y.ticks(5)).join('line').attr('x1', left).attr('x2', W - 10).attr('y1', (v) => y(v)).attr('y2', (v) => y(v)).attr('stroke', 'var(--cds-chart-grid)');
+    svg.append('g').selectAll('text').data(y.ticks(5)).join('text').attr('x', left - 6).attr('y', (v) => y(v)).attr('dy', '0.32em').attr('text-anchor', 'end').attr('font-size', 12).attr('fill', 'var(--color-fg-muted)').text((v) => fmtInt(v));
+    const every = Math.max(1, Math.ceil(rows.length / Math.max(2, Math.floor((W - left) / 70))));
+    const fmtDay = d3.utcFormat('%b %-d');
+    svg.append('g').selectAll('text').data(rows.filter((r, i) => i % every === 0)).join('text').attr('x', (r) => x(r.date) + x.bandwidth() / 2).attr('y', H - 6).attr('text-anchor', 'middle').attr('font-size', 12).attr('fill', 'var(--color-fg-muted)').text((r) => fmtDay(parse(r.date)));
+    svg.append('g').selectAll('rect').data(rows).join('rect').attr('x', (r) => x(r.date)).attr('width', x.bandwidth()).attr('y', (r) => y(r.attempts)).attr('height', (r) => y(0) - y(r.attempts)).attr('rx', Math.min(3, x.bandwidth() / 2)).attr('fill', 'var(--cds-chart-muted)').attr('opacity', 0.6);
+    svg.append('g').selectAll('rect').data(rows).join('rect').attr('x', (r) => x(r.date)).attr('width', x.bandwidth()).attr('y', (r) => y(r.paid)).attr('height', (r) => y(0) - y(r.paid)).attr('rx', Math.min(3, x.bandwidth() / 2)).attr('fill', C[0]);
+    svg.append('path').datum(rows).attr('d', d3.line((r) => x(r.date) + x.bandwidth() / 2, (r) => y(r.paid_7d))).attr('fill', 'none').attr('stroke', C[1]).attr('stroke-width', 2).attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round');
+    const tt = tip(el);
+    const hover = svg.append('rect').attr('fill', 'none').attr('stroke', 'var(--color-fg)').attr('stroke-width', 1).attr('visibility', 'hidden');
+    svg.append('g').selectAll('rect').data(rows).join('rect').attr('x', (r) => x(r.date) - (x.step() - x.bandwidth()) / 2).attr('width', x.step()).attr('y', 0).attr('height', H - 24).attr('fill', 'transparent')
+      .on('mousemove', (event, r) => {
+        hover.attr('x', x(r.date)).attr('width', x.bandwidth()).attr('y', y(r.attempts)).attr('height', y(0) - y(r.attempts)).attr('visibility', 'visible');
+        tt.show(event, d3.utcFormat('%a %-d %b %Y')(parse(r.date)), [[null, 'Order attempts', fmtInt(r.attempts)], [C[0], 'Paid orders', fmtInt(r.paid)], [C[1], '7-day average paid', d3.format('.1f')(r.paid_7d)], [null, 'Payment success', r.attempts ? fmtPct(r.paid / r.attempts) : '—']]);
+      })
+      .on('mouseleave', () => { tt.hide(); hover.attr('visibility', 'hidden'); });
+  });
+
+  dash.draw('weekday', (el) => {
+    el.replaceChildren();
+    const d = dash.data('weekday');
+    if (d.status !== 'ok') return;
+    const q = p();
+    const rows = d.data.filter((r) => r.subject === q.subject && r.tier === q.tier);
+    if (!rows.length) return;
+    const months = [...new Set(rows.map((r) => r.month))].filter((m) => m !== 'all').sort();
+    const table = document.createElement('table');
+    const head = table.createTHead().insertRow();
+    ['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].forEach((t) => { const th = document.createElement('th'); th.textContent = t; head.append(th); });
+    const body = table.createTBody();
+    [...months, 'all'].forEach((m) => {
+      const tr = body.insertRow();
+      const th = document.createElement('th'); th.textContent = m === 'all' ? 'All months' : SHORT[m] || m; tr.append(th);
+      if (q.month !== 'all' && m !== q.month && m !== 'all') tr.style.opacity = '0.45';
+      for (let wd = 0; wd < 7; wd++) {
+        const td = tr.insertCell();
+        const r = rows.find((x) => x.month === m && x.weekday === wd);
+        if (!r || !r.attempts) { td.className = 'empty'; td.textContent = '·'; continue; }
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.tabIndex = -1;
+        b.setAttribute('aria-label', (m === 'all' ? 'All months' : MONTHS[m]) + ', ' + r.day + ': ' + fmt(r.success, 'pct') + ' paid');
+        b.style.background = 'color-mix(in srgb, ' + C[2] + ' ' + Math.round((r.success || 0) * 70) + '%, transparent)';
+        b.style.cursor = 'default';
+        const s1 = document.createElement('span'); s1.className = 's'; s1.textContent = d3.format('.0%')(r.success);
+        const s2 = document.createElement('span'); s2.className = 'n'; s2.textContent = fmtInt(r.paid);
+        b.append(s1, s2);
+        td.append(b);
+      }
+    });
+    el.append(table);
+  });
+
+  const STATUS = [['captured', 'Paid (captured)', 0], ['pending', 'Pending', 'muted'], ['attempted', 'Attempted', 1], ['created', 'Created', 3], ['failed', 'Failed', 4]];
+  const statusColor = (i) => (i === 'muted' ? 'var(--cds-chart-muted)' : C[i]);
+
+  dash.draw('weekly-legend', (el) => {
+    el.replaceChildren();
+    STATUS.forEach(([, name, i]) => { const s = document.createElement('span'); s.style.setProperty('--ito-c', statusColor(i)); s.textContent = name; el.append(s); });
+  });
+
+  dash.draw('weekly', (el) => {
+    el.replaceChildren();
+    const d = dash.data('weekly');
+    if (d.status !== 'ok') return;
+    const q = p();
+    const rows = d.data.filter((r) => r.subject === q.subject && r.tier === q.tier);
+    if (!rows.length) return;
+    const W = Math.max(280, el.clientWidth), H = 260;
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Orders per week by payment status');
+    const y = d3.scaleLinear([0, (d3.max(rows, (r) => r.total) || 1) * 1.08], [H - 26, 10]).nice();
+    const left = textWidth(svg, fmtInt(y.domain()[1])) + 12;
+    const x = d3.scaleBand(rows.map((r) => r.week), [left, W - 8]).padding(0.2);
+    svg.append('g').selectAll('line').data(y.ticks(4)).join('line').attr('x1', left).attr('x2', W - 8).attr('y1', (v) => y(v)).attr('y2', (v) => y(v)).attr('stroke', 'var(--cds-chart-grid)');
+    svg.append('g').selectAll('text').data(y.ticks(4)).join('text').attr('x', left - 6).attr('y', (v) => y(v)).attr('dy', '0.32em').attr('text-anchor', 'end').attr('font-size', 12).attr('fill', 'var(--color-fg-muted)').text((v) => fmtInt(v));
+    const every = Math.max(1, Math.ceil(rows.length / Math.max(2, Math.floor((W - left) / 60))));
+    const fmtWeek = d3.utcFormat('%b %-d');
+    svg.append('g').selectAll('text').data(rows.filter((r, i) => i % every === 0)).join('text').attr('x', (r) => x(r.week) + x.bandwidth() / 2).attr('y', H - 6).attr('text-anchor', 'middle').attr('font-size', 12).attr('fill', 'var(--color-fg-muted)').text((r) => fmtWeek(new Date(r.week + 'T00:00:00Z')));
+    const keys = STATUS.map((s) => s[0]);
+    const stack = d3.stack().keys(keys)(rows);
+    stack.forEach((layer, li) => {
+      svg.append('g').selectAll('rect').data(layer).join('rect').attr('x', (v) => x(v.data.week)).attr('width', x.bandwidth()).attr('y', (v) => y(v[1])).attr('height', (v) => Math.max(0, y(v[0]) - y(v[1]))).attr('fill', statusColor(STATUS[li][2]));
+    });
+    const tt = tip(el);
+    svg.append('g').selectAll('rect').data(rows).join('rect').attr('x', (r) => x(r.week)).attr('width', x.bandwidth()).attr('y', 0).attr('height', H - 24).attr('fill', 'transparent')
+      .on('mousemove', (event, r) => tt.show(event, 'Week of ' + d3.utcFormat('%-d %b')(new Date(r.week + 'T00:00:00Z')), STATUS.filter(([k]) => r[k]).map(([k, name, i]) => [statusColor(i), name, fmtInt(r[k])]).concat([[null, 'Payment success', fmtPct(r.captured / r.total)]])))
+      .on('mouseleave', () => tt.hide());
+  });
+
+  const barRows = (el, title, steps) => {
+    if (title) { const h = document.createElement('div'); h.className = 'ito-fsep'; h.textContent = title; el.append(h); }
+    const max = steps[0][1] || 1;
+    steps.forEach(([label, v, c0, isBad]) => {
+      const row = document.createElement('div'); row.className = 'ito-frow' + (isBad ? ' bad' : '');
+      const lab = document.createElement('div'); lab.className = 'lab'; lab.textContent = label;
+      const bar = document.createElement('div'); bar.className = 'bar';
+      const fill = document.createElement('div'); fill.className = 'fill';
+      const w = Math.max(0.5, (v / max) * 100);
+      fill.style.width = w * 0.74 + '%';
+      fill.style.setProperty('--ito-c', isBad ? 'var(--color-bad)' : c0);
+      const val = document.createElement('div'); val.className = 'val';
+      val.textContent = fmtInt(v) + (steps[0][1] ? ' · ' + fmtPct(v / steps[0][1]) : '');
+      val.style.left = 'calc(' + w * 0.74 + '% + 6px)';
+      bar.append(fill, val); row.append(lab, bar); el.append(row);
+    });
+  };
 
   dash.draw('funnel', (el) => {
     el.replaceChildren();
     const r = cubeRow(keyNow());
     if (!r) return;
-    const bad = 'var(--color-bad)';
-    const block = (title, steps) => {
-      const h = document.createElement('div'); h.className = 'ito-fsep'; h.textContent = title; el.append(h);
-      const max = steps[0][1] || 1;
-      steps.forEach(([label, v, c0, isBad]) => {
-        const row = document.createElement('div'); row.className = 'ito-frow' + (isBad ? ' bad' : '');
-        const lab = document.createElement('div'); lab.className = 'lab'; lab.textContent = label;
-        const bar = document.createElement('div'); bar.className = 'bar';
-        const fill = document.createElement('div'); fill.className = 'fill';
-        const w = Math.max(0.5, (v / max) * 100);
-        fill.style.width = w * 0.78 + '%';
-        fill.style.setProperty('--ito-c', isBad ? bad : c0);
-        const val = document.createElement('div'); val.className = 'val';
-        val.textContent = fmtInt(v) + (steps[0][1] ? ' · ' + fmtPct(v / steps[0][1]) : '');
-        val.style.left = 'calc(' + w * 0.78 + '% + 6px)';
-        bar.append(fill, val); row.append(lab, bar); el.append(row);
-      });
-    };
-    block('Students', [
-      ['Reached checkout', r.students, dash.colors[0]],
-      ['Paid at least once', r.payers, dash.colors[0]],
+    barRows(el, 'Students', [
+      ['Reached checkout', r.students, C[0]],
+      ['Paid at least once', r.payers, C[0]],
       ['Paid on first try', r.first_try, 'var(--cds-chart-muted)'],
       ['Paid after a retry', r.after_retry, 'var(--cds-chart-muted)'],
       ["Didn't pay", r.never_paid, null, true],
     ]);
-    block('Orders', [
-      ['Order attempts', r.attempts, dash.colors[1]],
-      ['Paid (captured)', r.paid, dash.colors[1]],
+    barRows(el, 'Orders', [
+      ['Order attempts', r.attempts, C[1]],
+      ['Paid (captured)', r.paid, C[1]],
       ['Pending', r.pending, 'var(--cds-chart-muted)'],
       ['Attempted / created / failed', r.other_unpaid, 'var(--cds-chart-muted)'],
     ]);
   });
+
+  dash.draw('unpaid', (el) => {
+    el.replaceChildren();
+    const r = cubeRow(keyNow());
+    if (!r) return;
+    barRows(el, 'Unpaid orders', [
+      ['All unpaid orders', r.attempts - r.paid, 'var(--cds-chart-muted)'],
+      ['Recovered later', r.recovered, C[2]],
+      ['Never recovered', r.lost, null, true],
+    ]);
+    barRows(el, 'Of which', [
+      ['All unpaid orders', r.attempts - r.paid, 'var(--cds-chart-muted)'],
+      ['Repeat same-day clicks', r.repeat_clicks, C[1]],
+    ]);
+  });
+
+  dash.draw('retry', (el) => {
+    el.replaceChildren();
+    const d = dash.data('retry');
+    if (d.status !== 'ok') return;
+    const q = p();
+    const rows = d.data.filter((r) => r.month === q.month && r.subject === q.subject && r.tier === q.tier);
+    if (!rows.length) return;
+    const W = Math.max(280, el.clientWidth), H = 180;
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Students by number of orders');
+    const y = d3.scaleLinear([0, (d3.max(rows, (r) => r.students) || 1) * 1.2], [H - 40, 8]);
+    const x = d3.scaleBand(rows.map((r) => r.orders), [8, W - 8]).padding(0.35);
+    const bw = Math.min(56, x.bandwidth());
+    rows.forEach((r) => {
+      const cx = x(r.orders) + x.bandwidth() / 2;
+      svg.append('rect').attr('x', cx - bw / 2).attr('width', bw).attr('y', y(r.students)).attr('height', y(0) - y(r.students)).attr('rx', 4).attr('fill', 'var(--cds-chart-muted)').attr('opacity', 0.55);
+      svg.append('rect').attr('x', cx - bw / 2).attr('width', bw).attr('y', y(r.paid_students)).attr('height', y(0) - y(r.paid_students)).attr('rx', 4).attr('fill', C[0]);
+      svg.append('text').attr('x', cx).attr('y', y(r.students) - 5).attr('text-anchor', 'middle').attr('font-size', 12).attr('fill', 'var(--color-fg)').text(fmtInt(r.students) + (r.students ? ' · ' + d3.format('.0%')(r.paid_share) + ' paid' : ''));
+      svg.append('text').attr('x', cx).attr('y', H - 22).attr('text-anchor', 'middle').attr('font-size', 12).attr('fill', 'var(--color-fg-muted)').text(r.orders + (r.orders === '1' ? ' order' : ' orders'));
+    });
+    svg.append('text').attr('x', 8).attr('y', H - 4).attr('font-size', 12).attr('fill', 'var(--color-fg-muted)').text('Grey: all students in the group · Coloured: those who paid');
+  });
+
+  // plans table: sort + search
+  const planSort = { key: 'paid', dir: -1 };
+  let planQuery = '';
+  document.querySelectorAll('.ito-plan-search').forEach((inp) => inp.addEventListener('input', () => { planQuery = inp.value.trim().toLowerCase(); dash.draw('plan-rows'); }));
+  document.querySelectorAll('.ito-plan-table th[data-sort]').forEach((th) => th.addEventListener('click', () => {
+    const k = th.dataset.sort;
+    planSort.dir = planSort.key === k ? -planSort.dir : (k === 'plan' ? 1 : -1);
+    planSort.key = k;
+    document.querySelectorAll('.ito-plan-table th[data-sort]').forEach((h) => h.setAttribute('aria-sort', h.dataset.sort === k ? (planSort.dir > 0 ? 'ascending' : 'descending') : 'none'));
+    dash.draw('plan-rows');
+  }));
 
   dash.draw('plan-rows', (tbody) => {
     tbody.replaceChildren();
     const d = dash.data('plans');
     if (d.status !== 'ok') return;
     const q = p();
-    const rows = d.data.filter((r) => r.month === q.month && (q.subject === 'all' || r.subject === q.subject) && (q.tier === 'all' || r.tier === q.tier))
-      .sort((a, b) => b.paid - a.paid || b.attempts - a.attempts);
+    const k = planSort.key, dir = planSort.dir;
+    const rows = d.data.filter((r) => r.month === q.month && matchPlan(r.plan, q) && (!planQuery || r.plan.toLowerCase().includes(planQuery)))
+      .sort((a, b) => (k === 'plan' ? dir * a.plan.localeCompare(b.plan) : dir * ((a[k] || 0) - (b[k] || 0))) || b.attempts - a.attempts);
     rows.forEach((r) => {
       const tr = document.createElement('tr');
       tr.dataset.key = r.k;
-      const cells = [r.plan, fmtInt(r.attempts), fmtInt(r.paid), fmt(r.success, 'pct'), fmt(r.share, 'pct')];
-      cells.forEach((v, i) => {
+      [r.plan, fmtInt(r.attempts), fmtInt(r.paid), fmt(r.success, 'pct'), fmt(r.share, 'pct')].forEach((v, i) => {
         const td = document.createElement('td');
         td.textContent = v;
         if (i === 3) {
           const b = document.createElement('span'); b.className = 'ito-cellbar';
           b.style.width = Math.round(r.success * 48) + 'px';
-          b.style.setProperty('--ito-c', r.success < 0.5 ? 'var(--color-bad)' : dash.colors[0]);
+          b.style.setProperty('--ito-c', r.success < 0.5 ? 'var(--color-bad)' : C[0]);
           td.append(b);
         }
         tr.append(td);
@@ -473,31 +1243,58 @@
     });
   });
 
+  dash.draw('combo-rows', (tbody) => {
+    tbody.replaceChildren();
+    const d = dash.data('combos');
+    if (d.status !== 'ok') return;
+    const q = p();
+    const rows = d.data.filter((r) => r.month === q.month && r.cart.split(' + ').some((pl) => matchPlan(pl, q))).sort((a, b) => b.paid - a.paid || b.attempts - a.attempts).slice(0, 15);
+    rows.forEach((r) => {
+      const tr = document.createElement('tr');
+      tr.dataset.key = r.k;
+      [r.cart, fmtInt(r.attempts), fmtInt(r.paid), fmt(r.success, 'pct'), fmt(r.share, 'pct')].forEach((v) => { const td = document.createElement('td'); td.textContent = v; tr.append(td); });
+      tbody.append(tr);
+    });
+  });
+
+  const hBars = (el, rows, labelOf, valueOf, textOf, colorOf, label) => {
+    const W = Math.max(280, el.clientWidth), rowH = 34, H = rows.length * rowH + 8;
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', label);
+    const left = d3.max(rows, (r) => textWidth(svg, labelOf(r))) + 12;
+    const right = d3.max(rows, (r) => textWidth(svg, textOf(r))) + 10;
+    const x = d3.scaleLinear([0, 1], [left, W - right]);
+    rows.forEach((r, i) => {
+      const yy = i * rowH + 4;
+      svg.append('text').attr('x', left - 8).attr('y', yy + 13).attr('dy', '0.32em').attr('text-anchor', 'end').attr('font-size', 12).attr('fill', 'var(--color-fg-muted)').text(labelOf(r));
+      svg.append('rect').attr('x', left).attr('y', yy + 2).attr('width', x(1) - left).attr('height', 22).attr('rx', 4).attr('fill', 'var(--cds-chart-grid)');
+      svg.append('rect').attr('x', left).attr('y', yy + 2).attr('width', Math.max(1, x(valueOf(r) || 0) - left)).attr('height', 22).attr('rx', 4).attr('fill', colorOf(r));
+      svg.append('text').attr('x', x(1) + 6).attr('y', yy + 13).attr('dy', '0.32em').attr('font-size', 12).attr('fill', 'var(--color-fg)').text(textOf(r));
+    });
+  };
+
   dash.draw('carts', (el) => {
     el.replaceChildren();
     const d = dash.data('carttype');
     if (d.status !== 'ok') return;
     const q = p();
     const rows = d.data.filter((r) => r.month === q.month && r.attempts > 0);
-    const W = Math.max(280, el.clientWidth), rowH = 34, H = rows.length * rowH + 8;
-    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Payment success by cart type');
-    const probe = svg.append('text').attr('font-size', 12).text('Champion only');
-    const left = probe.node().getComputedTextLength() + 12;
-    probe.remove();
-    const probe2 = svg.append('text').attr('font-size', 12).text('100.0% of 9,999');
-    const right = probe2.node().getComputedTextLength() + 10;
-    probe2.remove();
-    const x = d3.scaleLinear([0, 1], [left, W - right]);
+    if (!rows.length) return;
     const best = d3.max(rows, (r) => r.success);
     const worst = d3.min(rows.filter((r) => r.attempts >= 20), (r) => r.success);
-    rows.forEach((r, i) => {
-      const yy = i * rowH + 4;
-      svg.append('text').attr('x', left - 8).attr('y', yy + 13).attr('dy', '0.32em').attr('text-anchor', 'end').attr('font-size', 12).attr('fill', 'var(--color-fg-muted)').text(r.cart_type);
-      svg.append('rect').attr('x', left).attr('y', yy + 2).attr('width', x(1) - left).attr('height', 22).attr('rx', 3).attr('fill', 'var(--cds-chart-grid)');
-      svg.append('rect').attr('x', left).attr('y', yy + 2).attr('width', Math.max(1, x(r.success || 0) - left)).attr('height', 22).attr('rx', 3)
-        .attr('fill', r.success === worst && worst !== best ? 'var(--cds-chart-status-critical)' : dash.colors[0]);
-      svg.append('text').attr('x', x(1) + 6).attr('y', yy + 13).attr('dy', '0.32em').attr('font-size', 12).attr('fill', 'var(--color-fg)')
-        .text(fmt(r.success, 'pct') + ' of ' + fmtInt(r.attempts));
-    });
+    hBars(el, rows, (r) => r.cart_type, (r) => r.success, (r) => fmt(r.success, 'pct') + ' of ' + fmtInt(r.attempts),
+      (r) => (r.success === worst && worst !== best ? 'var(--cds-chart-status-critical)' : C[0]), 'Payment success by cart type');
+  });
+
+  dash.draw('addons', (el) => {
+    el.replaceChildren();
+    const d = dash.data('addons');
+    if (d.status !== 'ok') return;
+    const q = p();
+    const rows = d.data.filter((r) => r.month === q.month && r.subject === q.subject);
+    if (!rows.length) return;
+    hBars(el, rows, (r) => r.addon, (r) => r.attach, (r) => fmt(r.attach, 'pct') + ' · ' + fmtInt(r.paid_orders),
+      (r) => (r.addon === 'Olympiad exam' ? 'var(--cds-chart-muted)' : C[2]), 'Flexi add-on attach rate');
   });
 </script>
+
+<script src="reports.js"></script>
