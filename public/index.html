@@ -40,6 +40,9 @@
     color-scheme: dark;
   }
   html, body { margin: 0; }
+  /* Same as the claude.ai runtime: hidden always wins over a class's display rule. */
+  [hidden] { display: none !important; }
+  *, *::before, *::after { box-sizing: border-box; }
   body { background: var(--color-bg); color: var(--color-fg); font-family: var(--font-anthropic-sans); font-size: var(--cds-font-size-body); line-height: 1.45; }
   #dash-root { padding-block: 1.75rem 3rem; padding-left: max(16px, env(safe-area-inset-left, 0px), 3vw); padding-right: max(16px, env(safe-area-inset-right, 0px), 3vw); }
   #dash-root .ito-loading { color: var(--color-fg-muted); }
@@ -85,7 +88,8 @@
   .ito-reset { font: inherit; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); background: none; border: 0; text-decoration: underline; cursor: pointer; padding: var(--cds-pad-xs); }
   .ito-scope { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin-left: auto; }
 
-  .ito-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); gap: var(--cds-gap-md); }
+  .ito-kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--cds-gap-md); }
+  @media (min-width: 64rem) { .ito-kpis { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
   .ito-kpi { position: relative; background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md) var(--cds-pad-lg); display: grid; gap: var(--cds-gap-xs); align-content: start; overflow: hidden; }
   .ito-kpi h3 { margin: 0; font-size: var(--cds-font-size-caption); font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); }
   .ito-kv { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); font-variant-numeric: tabular-nums; line-height: 1.1; }
@@ -186,7 +190,74 @@
   .ito-saved-item.is-open .ito-saved-name { font-weight: 600; }
   .ito-saved-name { overflow-wrap: anywhere; }
   .ito-saved-acts { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs); }
-  @media (max-width: 30rem) { .ito-frow { grid-template-columns: 7rem 1fr; } .ito-hero { padding: var(--cds-pad-md); } .ito-scope { margin-left: 0; } }
+  .ito-legend-note { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+
+  /* Tablets and phones */
+  @media (max-width: 48rem) {
+    .ito { gap: var(--cds-gap-md); }
+    .ito-panel { gap: var(--cds-gap-md); }
+    .ito-hero { padding: var(--cds-pad-md) var(--cds-pad-lg); }
+    .ito-hero h1 { font-size: var(--cds-font-size-title); }
+    /* Tabs scroll sideways instead of wrapping into several rows */
+    .ito-tabs { flex-wrap: nowrap; overflow-x: auto; width: 100%; border-radius: var(--cds-radius); scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+    .ito-tabs::-webkit-scrollbar { display: none; }
+    .ito-tab { flex: 0 0 auto; padding: var(--cds-pad-sm) var(--cds-pad-md); }
+    .ito-card { padding: var(--cds-pad-md); }
+    .ito-card-head .ito-seg { width: 100%; }
+    .ito-card-head .ito-seg button { flex: 1 1 auto; }
+    .ito-search { width: 100%; min-width: 0; }
+    .ito-card-head > input { flex: 1 1 100%; }
+  }
+
+  /* Phones */
+  @media (max-width: 36rem) {
+    .ito-hero { padding: var(--cds-pad-md); }
+    .ito-hero .ito-lede { font-size: var(--cds-font-size-caption); }
+    .ito-chips { display: none; }
+    /* Filters: two columns, not sticky (it would cover half the screen) */
+    .ito-filters { position: static; display: grid; grid-template-columns: 1fr 1fr; gap: var(--cds-gap-sm); padding: var(--cds-pad-sm); }
+    .ito-filters select { min-width: 0; width: 100%; }
+    .ito-filters .ito-field-tier { grid-column: 1 / -1; }
+    .ito-filters .ito-seg { display: flex; }
+    .ito-filters .ito-seg button { flex: 1 1 0; padding: var(--cds-pad-sm) 2px; }
+    .ito-scope { grid-column: 1 / -1; margin-left: 0; }
+    .ito-reset { justify-self: start; }
+    .ito-take { font-size: var(--cds-font-size-caption); }
+    .ito-card-head .ito-seg { display: grid; grid-template-columns: 1fr 1fr; }
+    .ito-card-head .ito-seg button { border-bottom: 1px solid var(--color-border-line); }
+    .ito-card-head .ito-seg button:nth-child(2n) { border-right: 0; }
+    .ito-card-head .ito-seg button:nth-last-child(-n+2) { border-bottom: 0; }
+    /* Two headline figures per row */
+    .ito-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--cds-gap-sm); }
+    .ito-kpi { padding: var(--cds-pad-sm) var(--cds-pad-md); }
+    .ito-kv { font-size: calc(var(--cds-font-size-title) * .8); }
+    .ito-sub { font-size: .75rem; }
+    .ito-hls { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--cds-gap-sm); }
+    .ito-hl { padding: var(--cds-pad-sm) var(--cds-pad-md); }
+    .ito-hl .big { font-size: var(--cds-font-size-heading); overflow-wrap: anywhere; }
+    .ito-grid { gap: var(--cds-gap-md); }
+    .ito-chart { min-height: 220px; }
+    .ito-chart.is-tall { min-height: 240px; }
+    .ito-frow { grid-template-columns: 6.5rem minmax(0, 1fr); gap: var(--cds-gap-xs); }
+    .ito-matrix table { border-spacing: 2px; }
+    .ito-matrix td button { min-width: 0; padding: 4px; }
+    .ito-matrix td button .s { font-size: var(--cds-font-size-caption); }
+    .ito-matrix td button .n { font-size: .6875rem; }
+    .ito-matrix.is-dense td button .n { display: none; }
+    .ito-matrix th { padding: 2px; font-size: .6875rem; }
+    .ito-table th, .ito-table td { padding: 4px 6px; }
+    .ito-tip { white-space: normal; max-width: 15rem; }
+    /* "Share" is the least important column; it shows again on wider screens */
+    .ito-plan-table th:nth-child(5), .ito-plan-table td:nth-child(5),
+    #combos .ito-table th:nth-child(5), #combos .ito-table td:nth-child(5) { display: none; }
+    .ito-matrix.is-dense table { table-layout: fixed; border-spacing: 2px; }
+    .ito-matrix.is-dense th:first-child { width: 2.6rem; }
+    .ito-matrix.is-dense td button { padding: 6px 0; text-align: center; }
+    .ito-matrix.is-dense td button .s { font-size: .6875rem; }
+    .ito-upresult .ito-card { overflow-x: auto; }
+    .ito-upresult .ito-table th, .ito-upresult .ito-table td { white-space: nowrap; }
+    .ito-drop { padding: var(--cds-pad-lg) var(--cds-pad-md); }
+  }
 </style>
 
 <div class="ito">
@@ -229,7 +300,7 @@
         <option value="NEET">NEET</option>
       </select>
     </label>
-    <div class="ito-field">Plan tier
+    <div class="ito-field ito-field-tier">Plan tier
       <div class="ito-seg" role="group" aria-label="Plan tier">
         <button type="button" data-tier-pick="all" aria-pressed="true">All</button>
         <button type="button" data-tier-pick="Flexi" aria-pressed="false">Flexi</button>
@@ -352,7 +423,7 @@
       <article class="ito-card" id="weekday">
         <h2>Day of the week</h2>
         <p class="note">Payment success by weekday and month; darker cells pay more often. The number is paid orders.</p>
-        <div class="ito-matrix" data-draw="weekday" data-source="weekday"></div>
+        <div class="ito-matrix is-dense" data-draw="weekday" data-source="weekday"></div>
       </article>
       <article class="ito-card" id="weekly">
         <h2>Payment status by week</h2>
@@ -380,6 +451,7 @@
     <article class="ito-card is-wide" id="retry">
       <h2>Orders per student</h2>
       <p class="note">Students grouped by how many orders they created in this view, and the share of each group that paid. Students who try three or more times are high-intent but hitting a problem.</p>
+      <div class="ito-legend"><span style="--ito-c: var(--cds-chart-muted)">All students in the group</span><span style="--ito-c: var(--ito-accent)">Students who paid</span></div>
       <div class="ito-chart is-short" data-draw="retry" data-source="retry"></div>
     </article>
   </section>
@@ -928,6 +1000,11 @@
   };
   document.querySelectorAll('[data-tab]').forEach((t) => t.addEventListener('click', () => syncFilters(t.dataset.tab)));
   syncFilters(location.hash.slice(1));
+  // A link to another tab on the same page (#trends, #products…) switches to it.
+  window.addEventListener('hashchange', () => {
+    const name = location.hash.slice(1);
+    document.querySelectorAll('[data-tab]').forEach((t) => { if (t.dataset.tab === name && t.getAttribute('aria-selected') !== 'true') t.click(); });
+  });
 
   dash.onData(() => {
     const q = p();
@@ -1039,8 +1116,8 @@
     const tt = tip(el);
     svg.append('g').selectAll('rect').data(rows).join('rect')
       .attr('x', (r) => x(r.month)).attr('width', x.bandwidth()).attr('y', 0).attr('height', H - 24).attr('fill', 'transparent').style('cursor', 'pointer')
-      .on('mousemove', (event, r) => tt.show(event, MONTHS[r.month] || r.month, [[C[0], 'Paid orders', fmtInt(r.paid)], [C[1], 'Payment success', fmt(r.success, 'pct')], [null, 'Order attempts', fmtInt(r.attempts)], [null, 'Students who paid', fmtInt(r.payers)]]))
-      .on('mouseleave', () => tt.hide())
+      .on('pointermove pointerdown',(event, r) => tt.show(event, MONTHS[r.month] || r.month, [[C[0], 'Paid orders', fmtInt(r.paid)], [C[1], 'Payment success', fmt(r.success, 'pct')], [null, 'Order attempts', fmtInt(r.attempts)], [null, 'Students who paid', fmtInt(r.payers)]]))
+      .on('pointerleave',() => tt.hide())
       .on('click', (event, r) => dash.setParams({ month: p().month === r.month ? 'all' : r.month }));
   });
 
@@ -1103,11 +1180,11 @@
     const tt = tip(el);
     const hover = svg.append('rect').attr('fill', 'none').attr('stroke', 'var(--color-fg)').attr('stroke-width', 1).attr('visibility', 'hidden');
     svg.append('g').selectAll('rect').data(rows).join('rect').attr('x', (r) => x(r.date) - (x.step() - x.bandwidth()) / 2).attr('width', x.step()).attr('y', 0).attr('height', H - 24).attr('fill', 'transparent')
-      .on('mousemove', (event, r) => {
+      .on('pointermove pointerdown',(event, r) => {
         hover.attr('x', x(r.date)).attr('width', x.bandwidth()).attr('y', y(r.attempts)).attr('height', y(0) - y(r.attempts)).attr('visibility', 'visible');
         tt.show(event, d3.utcFormat('%a %-d %b %Y')(parse(r.date)), [[null, 'Order attempts', fmtInt(r.attempts)], [C[0], 'Paid orders', fmtInt(r.paid)], [C[1], '7-day average paid', d3.format('.1f')(r.paid_7d)], [null, 'Payment success', r.attempts ? fmtPct(r.paid / r.attempts) : '—']]);
       })
-      .on('mouseleave', () => { tt.hide(); hover.attr('visibility', 'hidden'); });
+      .on('pointerleave',() => { tt.hide(); hover.attr('visibility', 'hidden'); });
   });
 
   dash.draw('weekday', (el) => {
@@ -1177,24 +1254,26 @@
     });
     const tt = tip(el);
     svg.append('g').selectAll('rect').data(rows).join('rect').attr('x', (r) => x(r.week)).attr('width', x.bandwidth()).attr('y', 0).attr('height', H - 24).attr('fill', 'transparent')
-      .on('mousemove', (event, r) => tt.show(event, 'Week of ' + d3.utcFormat('%-d %b')(new Date(r.week + 'T00:00:00Z')), STATUS.filter(([k]) => r[k]).map(([k, name, i]) => [statusColor(i), name, fmtInt(r[k])]).concat([[null, 'Payment success', fmtPct(r.captured / r.total)]])))
-      .on('mouseleave', () => tt.hide());
+      .on('pointermove pointerdown',(event, r) => tt.show(event, 'Week of ' + d3.utcFormat('%-d %b')(new Date(r.week + 'T00:00:00Z')), STATUS.filter(([k]) => r[k]).map(([k, name, i]) => [statusColor(i), name, fmtInt(r[k])]).concat([[null, 'Payment success', fmtPct(r.captured / r.total)]])))
+      .on('pointerleave',() => tt.hide());
   });
 
   const barRows = (el, title, steps) => {
     if (title) { const h = document.createElement('div'); h.className = 'ito-fsep'; h.textContent = title; el.append(h); }
     const max = steps[0][1] || 1;
+    // The value label sits right of the bar, so narrow screens keep the bars shorter.
+    const reach = el.clientWidth < 420 ? 0.5 : el.clientWidth < 560 ? 0.62 : 0.74;
     steps.forEach(([label, v, c0, isBad]) => {
       const row = document.createElement('div'); row.className = 'ito-frow' + (isBad ? ' bad' : '');
       const lab = document.createElement('div'); lab.className = 'lab'; lab.textContent = label;
       const bar = document.createElement('div'); bar.className = 'bar';
       const fill = document.createElement('div'); fill.className = 'fill';
       const w = Math.max(0.5, (v / max) * 100);
-      fill.style.width = w * 0.74 + '%';
+      fill.style.width = w * reach + '%';
       fill.style.setProperty('--ito-c', isBad ? 'var(--color-bad)' : c0);
       const val = document.createElement('div'); val.className = 'val';
-      val.textContent = fmtInt(v) + (steps[0][1] ? ' · ' + fmtPct(v / steps[0][1]) : '');
-      val.style.left = 'calc(' + w * 0.74 + '% + 6px)';
+      val.textContent = fmtInt(v) + (steps[0][1] ? ' · ' + (reach < 0.6 ? d3.format('.0%') : fmtPct)(v / steps[0][1]) : '');
+      val.style.left = 'calc(' + w * reach + '% + 4px)';
       bar.append(fill, val); row.append(lab, bar); el.append(row);
     });
   };
@@ -1241,18 +1320,25 @@
     const rows = d.data.filter((r) => r.month === q.month && r.subject === q.subject && r.tier === q.tier);
     if (!rows.length) return;
     const W = Math.max(280, el.clientWidth), H = 180;
+    const narrow = W < 560;
     const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Students by number of orders');
-    const y = d3.scaleLinear([0, (d3.max(rows, (r) => r.students) || 1) * 1.2], [H - 40, 8]);
-    const x = d3.scaleBand(rows.map((r) => r.orders), [8, W - 8]).padding(0.35);
+    // On narrow screens the count and the paid share go on two lines above each bar.
+    const y = d3.scaleLinear([0, d3.max(rows, (r) => r.students) || 1], [H - 24, narrow ? 36 : 22]);
+    const x = d3.scaleBand(rows.map((r) => r.orders), [4, W - 4]).padding(narrow ? 0.2 : 0.35);
     const bw = Math.min(56, x.bandwidth());
     rows.forEach((r) => {
       const cx = x(r.orders) + x.bandwidth() / 2;
       svg.append('rect').attr('x', cx - bw / 2).attr('width', bw).attr('y', y(r.students)).attr('height', y(0) - y(r.students)).attr('rx', 4).attr('fill', 'var(--cds-chart-muted)').attr('opacity', 0.55);
       svg.append('rect').attr('x', cx - bw / 2).attr('width', bw).attr('y', y(r.paid_students)).attr('height', y(0) - y(r.paid_students)).attr('rx', 4).attr('fill', C[0]);
-      svg.append('text').attr('x', cx).attr('y', y(r.students) - 5).attr('text-anchor', 'middle').attr('font-size', 12).attr('fill', 'var(--color-fg)').text(fmtInt(r.students) + (r.students ? ' · ' + d3.format('.0%')(r.paid_share) + ' paid' : ''));
-      svg.append('text').attr('x', cx).attr('y', H - 22).attr('text-anchor', 'middle').attr('font-size', 12).attr('fill', 'var(--color-fg-muted)').text(r.orders + (r.orders === '1' ? ' order' : ' orders'));
+      const share = r.students ? d3.format('.0%')(r.paid_share) + ' paid' : '';
+      if (narrow) {
+        svg.append('text').attr('x', cx).attr('y', y(r.students) - 19).attr('text-anchor', 'middle').attr('font-size', 12).attr('fill', 'var(--color-fg)').text(fmtInt(r.students));
+        svg.append('text').attr('x', cx).attr('y', y(r.students) - 5).attr('text-anchor', 'middle').attr('font-size', 11).attr('fill', 'var(--color-fg-muted)').text(share);
+      } else {
+        svg.append('text').attr('x', cx).attr('y', y(r.students) - 6).attr('text-anchor', 'middle').attr('font-size', 12).attr('fill', 'var(--color-fg)').text(fmtInt(r.students) + (share ? ' · ' + share : ''));
+      }
+      svg.append('text').attr('x', cx).attr('y', H - 6).attr('text-anchor', 'middle').attr('font-size', 12).attr('fill', 'var(--color-fg-muted)').text(narrow ? r.orders : r.orders + (r.orders === '1' ? ' order' : ' orders'));
     });
-    svg.append('text').attr('x', 8).attr('y', H - 4).attr('font-size', 12).attr('fill', 'var(--color-fg-muted)').text('Grey: all students in the group · Coloured: those who paid');
   });
 
   // plans table: sort + search
@@ -1308,17 +1394,24 @@
   });
 
   const hBars = (el, rows, labelOf, valueOf, textOf, colorOf, label) => {
-    const W = Math.max(280, el.clientWidth), rowH = 34, H = rows.length * rowH + 8;
+    const W = Math.max(260, el.clientWidth);
+    const probe = d3.select(el).append('svg');
+    const labelW = d3.max(rows, (r) => textWidth(probe, labelOf(r))) + 12;
+    const right = d3.max(rows, (r) => textWidth(probe, textOf(r))) + 10;
+    probe.remove();
+    // When labels would leave the bars too short, put each label on its own line above its bar.
+    const stacked = W - labelW - right < 120;
+    const rowH = stacked ? 44 : 34, H = rows.length * rowH + 8;
+    const left = stacked ? 0 : labelW;
     const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', label);
-    const left = d3.max(rows, (r) => textWidth(svg, labelOf(r))) + 12;
-    const right = d3.max(rows, (r) => textWidth(svg, textOf(r))) + 10;
     const x = d3.scaleLinear([0, 1], [left, W - right]);
     rows.forEach((r, i) => {
-      const yy = i * rowH + 4;
-      svg.append('text').attr('x', left - 8).attr('y', yy + 13).attr('dy', '0.32em').attr('text-anchor', 'end').attr('font-size', 12).attr('fill', 'var(--color-fg-muted)').text(labelOf(r));
-      svg.append('rect').attr('x', left).attr('y', yy + 2).attr('width', x(1) - left).attr('height', 22).attr('rx', 4).attr('fill', 'var(--cds-chart-grid)');
-      svg.append('rect').attr('x', left).attr('y', yy + 2).attr('width', Math.max(1, x(valueOf(r) || 0) - left)).attr('height', 22).attr('rx', 4).attr('fill', colorOf(r));
-      svg.append('text').attr('x', x(1) + 6).attr('y', yy + 13).attr('dy', '0.32em').attr('font-size', 12).attr('fill', 'var(--color-fg)').text(textOf(r));
+      const yy = i * rowH + 4 + (stacked ? 16 : 0);
+      if (stacked) svg.append('text').attr('x', 0).attr('y', yy - 5).attr('font-size', 12).attr('fill', 'var(--color-fg-muted)').text(labelOf(r));
+      else svg.append('text').attr('x', left - 8).attr('y', yy + 13).attr('dy', '0.32em').attr('text-anchor', 'end').attr('font-size', 12).attr('fill', 'var(--color-fg-muted)').text(labelOf(r));
+      svg.append('rect').attr('x', left).attr('y', yy + 2).attr('width', x(1) - left).attr('height', stacked ? 18 : 22).attr('rx', 4).attr('fill', 'var(--cds-chart-grid)');
+      svg.append('rect').attr('x', left).attr('y', yy + 2).attr('width', Math.max(1, x(valueOf(r) || 0) - left)).attr('height', stacked ? 18 : 22).attr('rx', 4).attr('fill', colorOf(r));
+      svg.append('text').attr('x', x(1) + 6).attr('y', yy + (stacked ? 11 : 13)).attr('dy', '0.32em').attr('font-size', 12).attr('fill', 'var(--color-fg)').text(textOf(r));
     });
   };
 

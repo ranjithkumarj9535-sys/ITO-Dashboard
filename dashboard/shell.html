@@ -40,6 +40,9 @@
     color-scheme: dark;
   }
   html, body { margin: 0; }
+  /* Same as the claude.ai runtime: hidden always wins over a class's display rule. */
+  [hidden] { display: none !important; }
+  *, *::before, *::after { box-sizing: border-box; }
   body { background: var(--color-bg); color: var(--color-fg); font-family: var(--font-anthropic-sans); font-size: var(--cds-font-size-body); line-height: 1.45; }
   #dash-root { padding-block: 1.75rem 3rem; padding-left: max(16px, env(safe-area-inset-left, 0px), 3vw); padding-right: max(16px, env(safe-area-inset-right, 0px), 3vw); }
   #dash-root .ito-loading { color: var(--color-fg-muted); }
