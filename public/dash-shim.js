@@ -10,6 +10,14 @@
   let message = '';
   let params = { ...DEFAULT_PARAMS };
 
+  // Expands the columnar file written by scripts/pack_orders.js back into order rows.
+  function unpack({ dicts, rows }) {
+    return rows.map(([txn, student, mmdd, status, paid, plans, cart, cartType]) => {
+      const date = '2026-' + mmdd.slice(0, 2) + '-' + mmdd.slice(2);
+      return { txn: String(txn), student: String(student), date, month: date.slice(0, 7), status: dicts.status[status], paid, plans_bought: plans, cart: dicts.cart[cart], cart_type: dicts.cart_type[cartType] };
+    });
+  }
+
   function render() {
     listeners.forEach((fn) => { try { fn(); } catch (e) { console.error(e); } });
     draws.forEach((fn, name) => {
@@ -40,7 +48,7 @@
       try {
         const res = await fetch(url);
         if (!res.ok) throw new Error('HTTP ' + res.status);
-        results.orders = await res.json();
+        results.orders = unpack(await new Response(res.body.pipeThrough(new DecompressionStream('gzip'))).json());
         calcs.forEach(({ id, def }) => { results[id] = def.fn(...def.inputs.map((i) => results[i])); });
         status = 'ok';
       } catch (e) {
