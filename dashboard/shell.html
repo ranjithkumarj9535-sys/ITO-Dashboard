@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ITO Orders &amp; Payments</title>
+<meta name="description" content="Olympiad plan orders, payment success and student conversion, Jun–Oct 2026.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600&family=Source+Serif+4:opsz,wght@8..60,400&display=swap">
+<style>
+  /* Tokens the dashboard page expects (normally supplied by the claude.ai dashboard runtime). */
+  :root {
+    --font-anthropic-sans: "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-anthropic-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+    --cds-font-size-caption: .8125rem; --cds-font-size-body: .9375rem; --cds-font-size-heading: 1.0625rem; --cds-font-size-title: 1.875rem;
+    --cds-font-weight-medium: 600;
+    --cds-gap-xs: .25rem; --cds-gap-sm: .5rem; --cds-gap-md: .875rem; --cds-gap-lg: 1.5rem; --cds-gap-xl: 2.25rem;
+    --cds-pad-xs: .3rem; --cds-pad-sm: .55rem; --cds-pad-md: .85rem; --cds-pad-lg: 1.15rem; --cds-pad-xl: 1.75rem;
+    --cds-radius: 8px; --cds-dur-slow: 320ms; --cds-ease-out: cubic-bezier(.2, .7, .2, 1);
+    --color-bg: #f5f6f8; --color-panel: #ffffff; --color-fg: #1b2230; --color-fg-muted: #5d6676; --color-border-line: #dfe3ea;
+    --color-ok: #1d7a46; --color-warn: #a86200; --color-bad: #c0352b;
+    --cds-chart-muted: #b7c0cf; --cds-chart-grid: #e8ebf0; --cds-chart-axis: #9aa3b2; --cds-chart-reference: #7d8696; --cds-chart-status-critical: #d2493e;
+    --cds-surface-popover: #ffffff; --cds-border: #d3d8e0; --cds-shadow-popover: 0 6px 20px rgba(20, 30, 50, .14); --cds-text-secondary: #5d6676;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --color-bg: #12161d; --color-panel: #1a2029; --color-fg: #e6e9ef; --color-fg-muted: #9aa3b2; --color-border-line: #2b333f;
+      --color-ok: #4cc283; --color-warn: #e3a440; --color-bad: #f0776c;
+      --cds-chart-muted: #4b5566; --cds-chart-grid: #252c37; --cds-chart-axis: #5d6676; --cds-chart-reference: #8a93a3; --cds-chart-status-critical: #ec6a5e;
+      --cds-surface-popover: #222935; --cds-border: #353e4c; --cds-shadow-popover: 0 6px 20px rgba(0, 0, 0, .45); --cds-text-secondary: #9aa3b2;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --color-bg: #12161d; --color-panel: #1a2029; --color-fg: #e6e9ef; --color-fg-muted: #9aa3b2; --color-border-line: #2b333f;
+    --color-ok: #4cc283; --color-warn: #e3a440; --color-bad: #f0776c;
+    --cds-chart-muted: #4b5566; --cds-chart-grid: #252c37; --cds-chart-axis: #5d6676; --cds-chart-reference: #8a93a3; --cds-chart-status-critical: #ec6a5e;
+    --cds-surface-popover: #222935; --cds-border: #353e4c; --cds-shadow-popover: 0 6px 20px rgba(0, 0, 0, .45); --cds-text-secondary: #9aa3b2;
+    color-scheme: dark;
+  }
+  html, body { margin: 0; }
+  body { background: var(--color-bg); color: var(--color-fg); font-family: var(--font-anthropic-sans); font-size: var(--cds-font-size-body); line-height: 1.45; }
+  #dash-root { padding-block: 1.75rem 3rem; padding-left: max(16px, env(safe-area-inset-left, 0px), 3vw); padding-right: max(16px, env(safe-area-inset-right, 0px), 3vw); }
+  #dash-root .ito-loading { color: var(--color-fg-muted); }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="dash-shim.js"></script>
+</head>
+<body>
+<div id="dash-root">
+<!-- PAGE -->
+</div>
+<script>dash.start('data/orders.json');</script>
+</body>
+</html>

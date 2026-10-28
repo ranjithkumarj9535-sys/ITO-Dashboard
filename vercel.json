@@ -1,0 +1,6 @@
+{
+  "framework": null,
+  "installCommand": "echo \"static site, no install\"",
+  "buildCommand": "echo \"public/ is prebuilt\"",
+  "outputDirectory": "public"
+}

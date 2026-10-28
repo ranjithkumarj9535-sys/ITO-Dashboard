@@ -1,0 +1,7 @@
+# Raw exports contain student names, parent emails and phone numbers: never commit them.
+*.csv
+*.tsv
+
+node_modules/
+.claude/
+.vercel/

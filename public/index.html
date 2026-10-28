@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ITO Orders &amp; Payments</title>
+<meta name="description" content="Olympiad plan orders, payment success and student conversion, Jun–Oct 2026.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600&family=Source+Serif+4:opsz,wght@8..60,400&display=swap">
+<style>
+  /* Tokens the dashboard page expects (normally supplied by the claude.ai dashboard runtime). */
+  :root {
+    --font-anthropic-sans: "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-anthropic-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+    --cds-font-size-caption: .8125rem; --cds-font-size-body: .9375rem; --cds-font-size-heading: 1.0625rem; --cds-font-size-title: 1.875rem;
+    --cds-font-weight-medium: 600;
+    --cds-gap-xs: .25rem; --cds-gap-sm: .5rem; --cds-gap-md: .875rem; --cds-gap-lg: 1.5rem; --cds-gap-xl: 2.25rem;
+    --cds-pad-xs: .3rem; --cds-pad-sm: .55rem; --cds-pad-md: .85rem; --cds-pad-lg: 1.15rem; --cds-pad-xl: 1.75rem;
+    --cds-radius: 8px; --cds-dur-slow: 320ms; --cds-ease-out: cubic-bezier(.2, .7, .2, 1);
+    --color-bg: #f5f6f8; --color-panel: #ffffff; --color-fg: #1b2230; --color-fg-muted: #5d6676; --color-border-line: #dfe3ea;
+    --color-ok: #1d7a46; --color-warn: #a86200; --color-bad: #c0352b;
+    --cds-chart-muted: #b7c0cf; --cds-chart-grid: #e8ebf0; --cds-chart-axis: #9aa3b2; --cds-chart-reference: #7d8696; --cds-chart-status-critical: #d2493e;
+    --cds-surface-popover: #ffffff; --cds-border: #d3d8e0; --cds-shadow-popover: 0 6px 20px rgba(20, 30, 50, .14); --cds-text-secondary: #5d6676;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --color-bg: #12161d; --color-panel: #1a2029; --color-fg: #e6e9ef; --color-fg-muted: #9aa3b2; --color-border-line: #2b333f;
+      --color-ok: #4cc283; --color-warn: #e3a440; --color-bad: #f0776c;
+      --cds-chart-muted: #4b5566; --cds-chart-grid: #252c37; --cds-chart-axis: #5d6676; --cds-chart-reference: #8a93a3; --cds-chart-status-critical: #ec6a5e;
+      --cds-surface-popover: #222935; --cds-border: #353e4c; --cds-shadow-popover: 0 6px 20px rgba(0, 0, 0, .45); --cds-text-secondary: #9aa3b2;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --color-bg: #12161d; --color-panel: #1a2029; --color-fg: #e6e9ef; --color-fg-muted: #9aa3b2; --color-border-line: #2b333f;
+    --color-ok: #4cc283; --color-warn: #e3a440; --color-bad: #f0776c;
+    --cds-chart-muted: #4b5566; --cds-chart-grid: #252c37; --cds-chart-axis: #5d6676; --cds-chart-reference: #8a93a3; --cds-chart-status-critical: #ec6a5e;
+    --cds-surface-popover: #222935; --cds-border: #353e4c; --cds-shadow-popover: 0 6px 20px rgba(0, 0, 0, .45); --cds-text-secondary: #9aa3b2;
+    color-scheme: dark;
+  }
+  html, body { margin: 0; }
+  body { background: var(--color-bg); color: var(--color-fg); font-family: var(--font-anthropic-sans); font-size: var(--cds-font-size-body); line-height: 1.45; }
+  #dash-root { padding-block: 1.75rem 3rem; padding-left: max(16px, env(safe-area-inset-left, 0px), 3vw); padding-right: max(16px, env(safe-area-inset-right, 0px), 3vw); }
+  #dash-root .ito-loading { color: var(--color-fg-muted); }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="dash-shim.js"></script>
+</head>
+<body>
+<div id="dash-root">
+<style>
+  .ito { display: grid; gap: var(--cds-gap-lg); font-family: var(--font-anthropic-sans); max-width: 82rem; margin-inline: auto; }
+  .ito-head h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; text-wrap: balance; }
+  .ito-head p { margin: var(--cds-gap-xs) 0 0; color: var(--color-fg-muted); max-width: 70ch; }
+  .ito-head .ito-take { color: var(--color-fg); }
+  .ito-take b { font-weight: 600; }
+  .ito-filters { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm) var(--cds-gap-md); align-items: end; }
+  .ito-filters label { display: grid; gap: var(--cds-gap-xs); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .ito-filters select, .ito-filters button { font: inherit; font-size: var(--cds-font-size-body); color: var(--color-fg); background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-xs) var(--cds-pad-sm); min-width: 9rem; }
+  .ito-filters button { min-width: 0; cursor: pointer; }
+  .ito-filters select:disabled { opacity: .55; }
+  .ito-filters select:focus-visible, .ito-filters button:focus-visible { outline: 2px solid var(--color-fg); outline-offset: 2px; }
+  .ito-scope { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .ito-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); gap: var(--cds-gap-md); }
+  .ito-kpi { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md) var(--cds-pad-lg); display: grid; gap: var(--cds-gap-xs); align-content: start; }
+  .ito-kpi h3 { margin: 0; font-size: var(--cds-font-size-caption); font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); }
+  .ito-kv { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .ito-kpi.is-bad .ito-kv { color: var(--color-bad); }
+  .ito-sub { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .ito-delta { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .ito-delta.up { color: var(--color-ok); }
+  .ito-delta.down { color: var(--color-bad); }
+  .ito-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); gap: var(--cds-gap-md); }
+  .ito-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: grid; gap: var(--cds-gap-sm); align-content: start; min-width: 0; }
+  .ito-card h2 { margin: 0; font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); }
+  .ito-card > p { margin: 0; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .ito-chart { position: relative; min-height: 260px; }
+  .ito-funnel { position: relative; min-height: 300px; display: grid; gap: var(--cds-gap-sm); align-content: start; }
+  .ito-carts { position: relative; min-height: 170px; }
+  .ito-frow { display: grid; grid-template-columns: minmax(8rem, 12rem) 1fr; gap: var(--cds-gap-sm); align-items: center; font-size: var(--cds-font-size-caption); }
+  .ito-frow .lab { color: var(--color-fg-muted); }
+  .ito-frow .bar { position: relative; height: 26px; }
+  .ito-frow .fill { height: 100%; border-radius: var(--cds-radius); background: var(--ito-c, var(--cds-chart-muted)); }
+  .ito-frow .val { position: absolute; top: 50%; transform: translateY(-50%); white-space: nowrap; font-variant-numeric: tabular-nums; color: var(--color-fg); }
+  .ito-frow.bad .val { color: var(--color-bad); font-weight: 600; }
+  .ito-fsep { font-size: var(--cds-font-size-caption); font-weight: var(--cds-font-weight-medium); margin-top: var(--cds-gap-sm); }
+  .ito-tip { position: absolute; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); white-space: nowrap; z-index: 2; }
+  .ito-tip .t { color: var(--cds-text-secondary); }
+  .ito-tip .sw { display: inline-block; width: .6rem; height: .6rem; border-radius: 2px; margin-right: .35rem; vertical-align: baseline; }
+  .ito-legend { display: flex; flex-wrap: wrap; gap: var(--cds-gap-md); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .ito-legend span::before { content: ""; display: inline-block; width: .7rem; height: .7rem; border-radius: 2px; margin-right: .35rem; vertical-align: -1px; background: var(--ito-c); }
+  .ito-legend .line::before { height: 2px; vertical-align: 3px; }
+  .ito-tablebox { max-height: 26rem; overflow: auto; }
+  .ito-table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+  .ito-table th { position: sticky; top: 0; background: var(--color-panel); text-align: right; font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); }
+  .ito-table td { text-align: right; padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); }
+  .ito-table th:first-child, .ito-table td:first-child { text-align: left; }
+  .ito-cellbar { display: inline-block; height: 6px; border-radius: 3px; background: var(--ito-c); margin-left: .4rem; vertical-align: middle; }
+  .ito-notes ul { margin: 0; padding-left: 1.1rem; display: grid; gap: var(--cds-gap-xs); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); max-width: 90ch; }
+  .ito-notes b { color: var(--color-fg); font-weight: 600; }
+  [data-dash-source-state=empty] { color: transparent; }
+  [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+  @media (max-width: 30rem) { .ito-frow { grid-template-columns: 7rem 1fr; } }
+</style>
+
+<div class="ito">
+  <header class="ito-head" id="top">
+    <h1>ITO orders &amp; payments</h1>
+    <p>Olympiad plan orders from 1 Jun to 27 Oct 2026, with test and internal accounts removed. The export has no order amounts, so this shows orders, students and plans, not revenue.</p>
+    <p class="ito-take">In this view, <b data-draw="kpi" data-source="cube" data-field="never_paid" data-fmt="int">—</b> students created an order but didn't pay, and payment succeeded on <b data-draw="kpi" data-source="cube" data-field="success" data-fmt="pct">—</b> of orders. Unpaid checkouts are the biggest drop-off, so following up on them is the first thing to fix.</p>
+  </header>
+
+  <section class="ito-filters" id="filters" aria-label="Filters">
+    <label>Month
+      <select class="ito-month" data-draw="month-select" data-source="cube" aria-label="Month"></select>
+    </label>
+    <label>Product (subject)
+      <select class="ito-subject" aria-label="Product (subject)">
+        <option value="all">All subjects</option>
+        <option value="Maths">Maths</option>
+        <option value="Science">Science</option>
+        <option value="English">English</option>
+        <option value="GK">GK</option>
+        <option value="Computer">Computer</option>
+        <option value="Social">Social Studies</option>
+        <option value="JEE">JEE</option>
+        <option value="NEET">NEET</option>
+      </select>
+    </label>
+    <label>Plan tier
+      <select class="ito-tier" aria-label="Plan tier">
+        <option value="all">All tiers</option>
+        <option value="Flexi">Flexi</option>
+        <option value="Smart">Smart</option>
+        <option value="Champion">Champion</option>
+      </select>
+    </label>
+    <label>Channel
+      <select class="ito-channel" aria-label="Channel" disabled>
+        <option>Not in the export</option>
+      </select>
+    </label>
+    <button type="button" class="ito-reset">Reset filters</button>
+    <span class="ito-scope" data-draw="scope">—</span>
+  </section>
+
+  <section class="ito-kpis" id="kpis" aria-label="Headline figures">
+    <div class="ito-kpi">
+      <h3>Paid orders</h3>
+      <div class="ito-kv" data-draw="kpi" data-source="cube" data-field="paid" data-fmt="int">—</div>
+      <div class="ito-sub"><span class="ito-delta" data-draw="delta" data-source="cube" data-field="paid_change" data-fmt="pct">—</span> vs previous month</div>
+    </div>
+    <div class="ito-kpi">
+      <h3>Payment success</h3>
+      <div class="ito-kv" data-draw="kpi" data-source="cube" data-field="success" data-fmt="pct">—</div>
+      <div class="ito-sub"><span class="ito-delta" data-draw="delta" data-source="cube" data-field="success_change" data-fmt="pp">—</span> vs previous month</div>
+    </div>
+    <div class="ito-kpi">
+      <h3>Order attempts</h3>
+      <div class="ito-kv" data-draw="kpi" data-source="cube" data-field="attempts" data-fmt="int">—</div>
+      <div class="ito-sub">Orders sent to the payment page</div>
+    </div>
+    <div class="ito-kpi">
+      <h3>Students who paid</h3>
+      <div class="ito-kv" data-draw="kpi" data-source="cube" data-field="payers" data-fmt="int">—</div>
+      <div class="ito-sub">of <span data-draw="kpi" data-source="cube" data-field="students" data-fmt="int">—</span> who reached checkout</div>
+    </div>
+    <div class="ito-kpi">
+      <h3>Student conversion</h3>
+      <div class="ito-kv" data-draw="kpi" data-source="cube" data-field="conversion" data-fmt="pct">—</div>
+      <div class="ito-sub">Paying students ÷ students at checkout</div>
+    </div>
+    <div class="ito-kpi is-bad">
+      <h3>Students who didn't pay</h3>
+      <div class="ito-kv" data-draw="kpi" data-source="cube" data-field="never_paid" data-fmt="int">—</div>
+      <div class="ito-sub">Win-back audience for this view</div>
+    </div>
+  </section>
+
+  <section class="ito-grid">
+    <article class="ito-card" id="trend">
+      <h2>Paid orders and payment success by month</h2>
+      <p>Bars are paid orders; the line is payment success (paid ÷ order attempts). October runs to the 27th only.</p>
+      <div class="ito-legend"><span class="bar" style="--ito-c: var(--ito-c1)">Paid orders</span><span class="line" style="--ito-c: var(--ito-c2)">Payment success</span></div>
+      <div class="ito-chart" data-draw="trend" data-source="cube"></div>
+    </article>
+    <article class="ito-card" id="funnel">
+      <h2>Payment funnel</h2>
+      <p>Students are counted once each; the red bar is the biggest loss. Pending, attempted, created and failed orders never count as paid.</p>
+      <div class="ito-funnel" data-draw="funnel" data-source="cube"></div>
+    </article>
+  </section>
+
+  <section class="ito-grid">
+    <article class="ito-card" id="plans">
+      <h2>Plans</h2>
+      <p>Each plan counted once per order that contains it, for the month picked. Sorted by paid orders.</p>
+      <div class="ito-tablebox">
+        <table class="ito-table" data-source="plans" data-row-key="k">
+          <thead><tr><th data-field="plan">Plan</th><th data-field="attempts">Orders</th><th data-field="paid">Paid</th><th data-field="success">Payment success</th><th data-field="share">Share of paid plans</th></tr></thead>
+          <tbody data-draw="plan-rows"></tbody>
+        </table>
+      </div>
+    </article>
+    <article class="ito-card" id="cart-types">
+      <h2>Payment success by cart type</h2>
+      <p>Orders holding only Flexi plans pay least often. Follows the month filter.</p>
+      <div class="ito-carts" data-draw="carts" data-source="carttype"></div>
+    </article>
+  </section>
+
+  <section class="ito-card ito-notes" id="notes">
+    <h2>How to read this</h2>
+    <ul>
+      <li><b>Paid</b> means the payment status is "captured". Pending, attempted, created and failed orders are unpaid.</li>
+      <li><b>Payment success</b> = paid orders ÷ order attempts. <b>Student conversion</b> = students with at least one paid order ÷ students with at least one order.</li>
+      <li><b>Students who didn't pay</b> counts students with no paid order inside the selected month, subject and tier.</li>
+      <li>The <b>subject and tier</b> filters keep orders that contain a matching plan. A mixed cart can appear under more than one subject.</li>
+      <li><b>Revenue, discounts and refunds</b> are not shown: the export has no amount, coupon or refund columns.</li>
+      <li><b>Channel</b> can't be filtered: the export has no channel, campaign or UTM columns.</li>
+      <li>Test and internal accounts were removed, and plan labels were made consistent. Names, emails and phone numbers are not in this dashboard.</li>
+      <li>On 23 Oct the payment system started using new unpaid statuses (attempted, created, failed) in place of "pending".</li>
+    </ul>
+  </section>
+</div>
+
+<script>
+  dash.calc('cube', {
+    title: 'Orders by month, subject and tier',
+    description: 'Order, payment and student counts for every month, subject and plan tier, plus "all" for each. Paid = status captured.',
+    inputs: ['orders'],
+    fn: (orders) => {
+      const list = orders.map((o) => ({
+        student: String(o.student), month: o.month, status: o.status, txn: Number(o.txn), paid: Number(o.paid) === 1,
+        items: o.cart.split(' + ').map((p) => { const w = p.split(' '); return { subject: w[0], tier: w[1] }; }),
+      }));
+      const months = [...new Set(list.map((o) => o.month))].sort();
+      const out = [];
+      for (const s of ['all', 'Maths', 'Science', 'English', 'GK', 'Computer', 'Social', 'JEE', 'NEET']) {
+        for (const t of ['all', 'Flexi', 'Smart', 'Champion']) {
+          const match = (it) => (s === 'all' || it.subject === s) && (t === 'all' || it.tier === t);
+          const inSet = list.map((o) => ({ o, units: o.items.filter(match).length })).filter((x) => x.units > 0);
+          let prevPaid = null, prevSuccess = null;
+          for (const m of ['all', ...months]) {
+            const rows = m === 'all' ? inSet : inSet.filter((x) => x.o.month === m);
+            const first = new Map();
+            rows.forEach((x) => { const f = first.get(x.o.student); if (!f || x.o.txn < f.txn) first.set(x.o.student, x.o); });
+            const attempts = rows.length;
+            const paidRows = rows.filter((x) => x.o.paid);
+            const paid = paidRows.length;
+            const pending = rows.filter((x) => x.o.status === 'pending').length;
+            const students = first.size;
+            const payers = new Set(paidRows.map((x) => x.o.student)).size;
+            const firstTry = [...first.values()].filter((o) => o.paid).length;
+            const success = attempts ? paid / attempts : null;
+            out.push({
+              k: m + '|' + s + '|' + t, month: m, subject: s, tier: t, attempts, paid, success, pending,
+              other_unpaid: attempts - paid - pending, students, payers, conversion: students ? payers / students : null,
+              first_try: firstTry, after_retry: payers - firstTry, never_paid: students - payers,
+              plans_sold: paidRows.reduce((a, x) => a + x.units, 0),
+              paid_change: m !== 'all' && prevPaid ? paid / prevPaid - 1 : null,
+              success_change: m !== 'all' && prevSuccess !== null && success !== null ? success - prevSuccess : null,
+            });
+            if (m !== 'all') { prevPaid = paid; prevSuccess = success; }
+          }
+        }
+      }
+      return out;
+    },
+  });
+
+  dash.calc('plans', {
+    title: 'Plans by month',
+    description: 'For each plan: orders containing it, paid orders containing it, payment success, and its share of all paid plan units, per month and for all months.',
+    inputs: ['orders'],
+    fn: (orders) => {
+      const out = [];
+      for (const m of ['all', ...[...new Set(orders.map((o) => o.month))].sort()]) {
+        const by = new Map();
+        let units = 0;
+        orders.filter((o) => m === 'all' || o.month === m).forEach((o) => o.cart.split(' + ').forEach((p) => {
+          const r = by.get(p) || { attempts: 0, paid: 0 };
+          r.attempts++;
+          if (Number(o.paid) === 1) { r.paid++; units++; }
+          by.set(p, r);
+        }));
+        by.forEach((r, p) => {
+          const w = p.split(' ');
+          out.push({ k: m + '|' + p, month: m, plan: p, subject: w[0], tier: w[1], attempts: r.attempts, paid: r.paid, success: r.paid / r.attempts, share: units ? r.paid / units : 0 });
+        });
+      }
+      return out;
+    },
+  });
+
+  dash.calc('carttype', {
+    title: 'Payment success by cart type',
+    description: 'Order attempts, paid orders and payment success for Flexi-only, Smart-only, Champion-only and mixed carts, per month and for all months.',
+    inputs: ['orders'],
+    fn: (orders) => {
+      const out = [];
+      for (const m of ['all', ...[...new Set(orders.map((o) => o.month))].sort()]) {
+        for (const c of ['Flexi only', 'Smart only', 'Champion only', 'Mixed tiers']) {
+          const rows = orders.filter((o) => o.cart_type === c && (m === 'all' || o.month === m));
+          const paid = rows.filter((o) => Number(o.paid) === 1).length;
+          out.push({ k: m + '|' + c, month: m, cart_type: c, attempts: rows.length, paid, success: rows.length ? paid / rows.length : null });
+        }
+      }
+      return out;
+    },
+  });
+</script>
+
+<script>
+  window.ito = (() => {
+    const fmtInt = d3.format(',');
+    const fmtPct = d3.format('.1%');
+    const MONTHS = { '2026-06': 'Jun 2026', '2026-07': 'Jul 2026', '2026-08': 'Aug 2026', '2026-09': 'Sep 2026', '2026-10': 'Oct 2026 (1–27)' };
+    const SHORT = { '2026-06': 'Jun', '2026-07': 'Jul', '2026-08': 'Aug', '2026-09': 'Sep', '2026-10': 'Oct*' };
+    const p = () => {
+      const q = dash.params();
+      return { month: q.month || 'all', subject: q.subject || 'all', tier: q.tier || 'all' };
+    };
+    const enc = (v) => String(v).replace(/%/g, '%25').replace(/&/g, '%26').replace(/=/g, '%3D');
+    const fmt = (v, kind) => {
+      if (v === null || v === undefined || Number.isNaN(v)) return '—';
+      if (kind === 'pct') return fmtPct(v);
+      if (kind === 'pp') return (v > 0 ? '+' : '') + d3.format('.1f')(v * 100) + ' pts';
+      return fmtInt(v);
+    };
+    const color = (el, name) => getComputedStyle(el).getPropertyValue(name).trim();
+    return { fmtInt, fmtPct, MONTHS, SHORT, p, enc, fmt, color };
+  })();
+</script>
+
+<script>
+  const { p, enc, fmt, MONTHS, SHORT, fmtInt, fmtPct } = window.ito;
+  document.querySelector('.ito')?.style.setProperty('--ito-c1', dash.colors[0]);
+  document.querySelector('.ito')?.style.setProperty('--ito-c2', dash.colors[1]);
+
+  const setDefaults = () => dash.setParams({ month: 'all', subject: 'all', tier: 'all' });
+
+  document.querySelectorAll('.ito-subject').forEach((sel) => sel.addEventListener('change', () => dash.setParams({ subject: sel.value })));
+  document.querySelectorAll('.ito-tier').forEach((sel) => sel.addEventListener('change', () => dash.setParams({ tier: sel.value })));
+  document.querySelectorAll('.ito-reset').forEach((b) => b.addEventListener('click', () => { dash.resetParams(); setDefaults(); }));
+
+  dash.onData(() => {
+    const q = p();
+    document.querySelectorAll('.ito-subject').forEach((sel) => { sel.value = q.subject; });
+    document.querySelectorAll('.ito-tier').forEach((sel) => { sel.value = q.tier; });
+  });
+
+  const cubeRow = (key) => {
+    const c = dash.data('cube');
+    return c.status === 'ok' ? c.data.find((r) => r.k === key) : null;
+  };
+  const keyNow = () => { const q = p(); return q.month + '|' + q.subject + '|' + q.tier; };
+
+  dash.draw('month-select', (sel) => {
+    const c = dash.data('cube');
+    const months = c.status === 'ok' ? [...new Set(c.data.map((r) => r.month))].filter((m) => m !== 'all').sort() : [];
+    sel.replaceChildren(new Option('All months', 'all'), ...months.map((m) => new Option(MONTHS[m] || m, m)));
+    sel.value = p().month;
+    sel.onchange = () => dash.setParams({ month: sel.value });
+  });
+
+  dash.draw('scope', (el) => {
+    const q = p();
+    el.textContent = 'Showing ' + (q.month === 'all' ? 'all months' : MONTHS[q.month] || q.month) + ' · '
+      + (q.subject === 'all' ? 'all subjects' : q.subject === 'Social' ? 'Social Studies' : q.subject) + ' · '
+      + (q.tier === 'all' ? 'all tiers' : q.tier);
+  });
+
+  dash.draw('kpi', (el) => {
+    const key = keyNow();
+    el.setAttribute('data-where', 'k=' + enc(key));
+    const r = cubeRow(key);
+    el.textContent = r ? fmt(r[el.dataset.field], el.dataset.fmt) : '—';
+  });
+
+  dash.draw('delta', (el) => {
+    const key = keyNow();
+    el.setAttribute('data-where', 'k=' + enc(key));
+    const r = cubeRow(key);
+    const v = r ? r[el.dataset.field] : null;
+    el.classList.toggle('up', v !== null && v > 0);
+    el.classList.toggle('down', v !== null && v < 0);
+    el.textContent = v === null || v === undefined ? (p().month === 'all' ? 'Pick a month' : '—') : (el.dataset.fmt === 'pct' ? (v > 0 ? '+' : '') + fmtPct(v) : fmt(v, 'pp'));
+  });
+
+  dash.draw('trend', (el) => {
+    el.replaceChildren();
+    const c = dash.data('cube');
+    if (c.status !== 'ok') return;
+    const q = p();
+    const rows = c.data.filter((r) => r.subject === q.subject && r.tier === q.tier && r.month !== 'all').sort((a, b) => (a.month < b.month ? -1 : 1));
+    const W = Math.max(280, el.clientWidth), H = 260;
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Paid orders and payment success by month');
+    const maxPaid = d3.max(rows, (r) => r.paid) || 1;
+    const y = d3.scaleLinear([0, maxPaid * 1.15], [H - 28, 14]).nice();
+    const y2 = d3.scaleLinear([0, 1], [H - 28, 14]);
+    const probe = svg.append('text').attr('font-size', 12).text(fmtInt(y.domain()[1]));
+    const left = probe.node().getComputedTextLength() + 12;
+    probe.remove();
+    const probe2 = svg.append('text').attr('font-size', 12).text('100%');
+    const right = probe2.node().getComputedTextLength() + 12;
+    probe2.remove();
+    const x = d3.scaleBand(rows.map((r) => r.month), [left, W - right]).padding(0.35);
+    const muted = 'var(--color-fg-muted)';
+    svg.append('g').selectAll('line').data(y.ticks(4)).join('line')
+      .attr('x1', left).attr('x2', W - right).attr('y1', (d) => y(d)).attr('y2', (d) => y(d))
+      .attr('stroke', 'var(--cds-chart-grid)').attr('stroke-width', 1);
+    svg.append('g').selectAll('text').data(y.ticks(4)).join('text')
+      .attr('x', left - 6).attr('y', (d) => y(d)).attr('dy', '0.32em').attr('text-anchor', 'end')
+      .attr('font-size', 12).attr('fill', muted).text((d) => fmtInt(d));
+    svg.append('g').selectAll('text').data([0, 0.25, 0.5, 0.75, 1]).join('text')
+      .attr('x', W - right + 6).attr('y', (d) => y2(d)).attr('dy', '0.32em')
+      .attr('font-size', 12).attr('fill', muted).text((d) => d3.format('.0%')(d));
+    svg.append('g').selectAll('text').data(rows).join('text')
+      .attr('x', (r) => x(r.month) + x.bandwidth() / 2).attr('y', H - 8).attr('text-anchor', 'middle')
+      .attr('font-size', 12).attr('fill', muted).text((r) => SHORT[r.month] || r.month);
+    const bw = Math.min(32, x.bandwidth());
+    svg.append('g').selectAll('rect').data(rows).join('rect')
+      .attr('x', (r) => x(r.month) + (x.bandwidth() - bw) / 2).attr('width', bw)
+      .attr('y', (r) => y(r.paid)).attr('height', (r) => y(0) - y(r.paid)).attr('rx', 3)
+      .attr('fill', dash.colors[0]).attr('opacity', (r) => (q.month === 'all' || q.month === r.month ? 1 : 0.35));
+    svg.append('g').selectAll('text').data(rows).join('text')
+      .attr('x', (r) => x(r.month) + x.bandwidth() / 2).attr('y', (r) => y(r.paid) - 6).attr('text-anchor', 'middle')
+      .attr('font-size', 12).attr('fill', 'var(--color-fg)').text((r) => fmtInt(r.paid));
+    const pts = rows.filter((r) => r.success !== null);
+    svg.append('path').datum(pts)
+      .attr('d', d3.line((r) => x(r.month) + x.bandwidth() / 2, (r) => y2(r.success)))
+      .attr('fill', 'none').attr('stroke', dash.colors[1]).attr('stroke-width', 2).attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round');
+    svg.append('g').selectAll('circle').data(pts).join('circle')
+      .attr('cx', (r) => x(r.month) + x.bandwidth() / 2).attr('cy', (r) => y2(r.success)).attr('r', 3.5)
+      .attr('fill', dash.colors[1]);
+    const tip = document.createElement('div');
+    tip.className = 'ito-tip';
+    tip.hidden = true;
+    el.append(tip);
+    svg.append('g').selectAll('rect').data(rows).join('rect')
+      .attr('x', (r) => x(r.month)).attr('width', x.bandwidth()).attr('y', 0).attr('height', H - 24)
+      .attr('fill', 'transparent').style('cursor', 'pointer')
+      .on('mousemove', (event, r) => {
+        tip.replaceChildren();
+        const t = document.createElement('div'); t.className = 't'; t.textContent = MONTHS[r.month] || r.month; tip.append(t);
+        [[dash.colors[0], 'Paid orders', fmtInt(r.paid)], [dash.colors[1], 'Payment success', fmt(r.success, 'pct')], [null, 'Order attempts', fmtInt(r.attempts)], [null, 'Students who paid', fmtInt(r.payers)]].forEach(([c0, n, v]) => {
+          const line = document.createElement('div');
+          if (c0) { const sw = document.createElement('span'); sw.className = 'sw'; sw.style.background = c0; line.append(sw); }
+          line.append(n + ': ' + v); tip.append(line);
+        });
+        tip.hidden = false;
+        const [mx, my] = d3.pointer(event, el);
+        const tw = tip.offsetWidth;
+        tip.style.left = Math.max(0, Math.min(el.clientWidth - tw, mx + 12)) + 'px';
+        tip.style.top = Math.max(0, my - 60) + 'px';
+      })
+      .on('mouseleave', () => { tip.hidden = true; })
+      .on('click', (event, r) => dash.setParams({ month: p().month === r.month ? 'all' : r.month }));
+  });
+
+  dash.draw('funnel', (el) => {
+    el.replaceChildren();
+    const r = cubeRow(keyNow());
+    if (!r) return;
+    const bad = 'var(--color-bad)';
+    const block = (title, steps) => {
+      const h = document.createElement('div'); h.className = 'ito-fsep'; h.textContent = title; el.append(h);
+      const max = steps[0][1] || 1;
+      steps.forEach(([label, v, c0, isBad]) => {
+        const row = document.createElement('div'); row.className = 'ito-frow' + (isBad ? ' bad' : '');
+        const lab = document.createElement('div'); lab.className = 'lab'; lab.textContent = label;
+        const bar = document.createElement('div'); bar.className = 'bar';
+        const fill = document.createElement('div'); fill.className = 'fill';
+        const w = Math.max(0.5, (v / max) * 100);
+        fill.style.width = w * 0.78 + '%';
+        fill.style.setProperty('--ito-c', isBad ? bad : c0);
+        const val = document.createElement('div'); val.className = 'val';
+        val.textContent = fmtInt(v) + (steps[0][1] ? ' · ' + fmtPct(v / steps[0][1]) : '');
+        val.style.left = 'calc(' + w * 0.78 + '% + 6px)';
+        bar.append(fill, val); row.append(lab, bar); el.append(row);
+      });
+    };
+    block('Students', [
+      ['Reached checkout', r.students, dash.colors[0]],
+      ['Paid at least once', r.payers, dash.colors[0]],
+      ['Paid on first try', r.first_try, 'var(--cds-chart-muted)'],
+      ['Paid after a retry', r.after_retry, 'var(--cds-chart-muted)'],
+      ["Didn't pay", r.never_paid, null, true],
+    ]);
+    block('Orders', [
+      ['Order attempts', r.attempts, dash.colors[1]],
+      ['Paid (captured)', r.paid, dash.colors[1]],
+      ['Pending', r.pending, 'var(--cds-chart-muted)'],
+      ['Attempted / created / failed', r.other_unpaid, 'var(--cds-chart-muted)'],
+    ]);
+  });
+
+  dash.draw('plan-rows', (tbody) => {
+    tbody.replaceChildren();
+    const d = dash.data('plans');
+    if (d.status !== 'ok') return;
+    const q = p();
+    const rows = d.data.filter((r) => r.month === q.month && (q.subject === 'all' || r.subject === q.subject) && (q.tier === 'all' || r.tier === q.tier))
+      .sort((a, b) => b.paid - a.paid || b.attempts - a.attempts);
+    rows.forEach((r) => {
+      const tr = document.createElement('tr');
+      tr.dataset.key = r.k;
+      const cells = [r.plan, fmtInt(r.attempts), fmtInt(r.paid), fmt(r.success, 'pct'), fmt(r.share, 'pct')];
+      cells.forEach((v, i) => {
+        const td = document.createElement('td');
+        td.textContent = v;
+        if (i === 3) {
+          const b = document.createElement('span'); b.className = 'ito-cellbar';
+          b.style.width = Math.round(r.success * 48) + 'px';
+          b.style.setProperty('--ito-c', r.success < 0.5 ? 'var(--color-bad)' : dash.colors[0]);
+          td.append(b);
+        }
+        tr.append(td);
+      });
+      tbody.append(tr);
+    });
+  });
+
+  dash.draw('carts', (el) => {
+    el.replaceChildren();
+    const d = dash.data('carttype');
+    if (d.status !== 'ok') return;
+    const q = p();
+    const rows = d.data.filter((r) => r.month === q.month && r.attempts > 0);
+    const W = Math.max(280, el.clientWidth), rowH = 34, H = rows.length * rowH + 8;
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Payment success by cart type');
+    const probe = svg.append('text').attr('font-size', 12).text('Champion only');
+    const left = probe.node().getComputedTextLength() + 12;
+    probe.remove();
+    const probe2 = svg.append('text').attr('font-size', 12).text('100.0% of 9,999');
+    const right = probe2.node().getComputedTextLength() + 10;
+    probe2.remove();
+    const x = d3.scaleLinear([0, 1], [left, W - right]);
+    const best = d3.max(rows, (r) => r.success);
+    const worst = d3.min(rows.filter((r) => r.attempts >= 20), (r) => r.success);
+    rows.forEach((r, i) => {
+      const yy = i * rowH + 4;
+      svg.append('text').attr('x', left - 8).attr('y', yy + 13).attr('dy', '0.32em').attr('text-anchor', 'end').attr('font-size', 12).attr('fill', 'var(--color-fg-muted)').text(r.cart_type);
+      svg.append('rect').attr('x', left).attr('y', yy + 2).attr('width', x(1) - left).attr('height', 22).attr('rx', 3).attr('fill', 'var(--cds-chart-grid)');
+      svg.append('rect').attr('x', left).attr('y', yy + 2).attr('width', Math.max(1, x(r.success || 0) - left)).attr('height', 22).attr('rx', 3)
+        .attr('fill', r.success === worst && worst !== best ? 'var(--cds-chart-status-critical)' : dash.colors[0]);
+      svg.append('text').attr('x', x(1) + 6).attr('y', yy + 13).attr('dy', '0.32em').attr('font-size', 12).attr('fill', 'var(--color-fg)')
+        .text(fmt(r.success, 'pct') + ' of ' + fmtInt(r.attempts));
+    });
+  });
+</script>
+
+</div>
+<script>dash.start('data/orders.json');</script>
+</body>
+</html>
