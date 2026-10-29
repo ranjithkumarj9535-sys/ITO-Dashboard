@@ -8,4 +8,5 @@ fs.mkdirSync(path.join(root, 'public'), { recursive: true });
 fs.writeFileSync(path.join(root, 'public', 'index.html'), shell.replace('<!-- PAGE -->', () => page));
 fs.copyFileSync(path.join(root, 'dashboard', 'dash-shim.js'), path.join(root, 'public', 'dash-shim.js'));
 fs.copyFileSync(path.join(root, 'dashboard', 'reports.js'), path.join(root, 'public', 'reports.js'));
+fs.copyFileSync(path.join(root, 'dashboard', 'departments.js'), path.join(root, 'public', 'departments.js'));
 console.log('built public/index.html');

@@ -6,6 +6,7 @@
   "scripts": {
     "report": "node scripts/build.js . ITO_Payments_Report_Jun-Oct_2026.xlsx",
     "data": "node scripts/export_orders.js . public/data/orders.json",
+    "dispatch": "node scripts/export_dispatch.js MAIN_Master_Data_Dispatch_Study_Material_2026-27_CORRECTED.xlsx",
     "site": "node scripts/precompute.js && node scripts/build_site.js",
     "test": "node scripts/test_calcs.js",
     "all": "npm run report && npm run data && npm run test && npm run site"

@@ -6,10 +6,12 @@ const page = fs.readFileSync(path.join(root, 'dashboard', 'page.html'), 'utf8');
 const scripts = [...page.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]);
 scripts.forEach((s, i) => { try { new Function(s); } catch (e) { console.log('SYNTAX script', i, e.message); process.exitCode = 1; } });
 new Function(fs.readFileSync(path.join(root, 'dashboard', 'reports.js'), 'utf8'));
+new Function(fs.readFileSync(path.join(root, 'dashboard', 'departments.js'), 'utf8'));
 
 const calcs = [];
 new Function('dash', scripts[0])({ calc: (id, def) => calcs.push({ id, def }) });
-const results = { orders: JSON.parse(fs.readFileSync(path.join(root, 'public', 'data', 'orders.json'), 'utf8')) };
+const read = (name) => JSON.parse(fs.readFileSync(path.join(root, 'public', 'data', name + '.json'), 'utf8'));
+const results = { orders: read('orders'), dispatch: read('dispatch'), dispatch_material: read('dispatch_material') };
 for (const { id, def } of calcs) {
   const t = Date.now();
   results[id] = def.fn(...def.inputs.map((i) => results[i]));
@@ -28,5 +30,24 @@ console.log('daily paid', dailyPaid, 'weekly paid', weeklyPaid, 'weekday paid', 
 if (retryStudents !== 2286) { console.log('MISMATCH retry students'); process.exitCode = 1; }
 console.log('highlights all', JSON.stringify(results.highlights.find((r) => r.k === 'all|all')));
 console.log('addons all', results.addons.filter((r) => r.k.startsWith('all|all|')).map((r) => r.addon + ' ' + (r.attach * 100).toFixed(1) + '%').join(', '));
+// Dispatch: totals must match the workbook's own "Summary Dispatch" sheet (shipped, delivered, not delivered per courier).
+const dc = (k) => results.dsp_cube.find((r) => r.k === k);
+const sheet = { all: [2487, 2369, 118], Speed: [789, 755, 34], DTDC: [1322, 1276, 46], PRO: [146, 117, 29], Maruti: [230, 221, 9] };
+for (const [c, [s, d, t]] of Object.entries(sheet)) {
+  const r = dc('all|' + c + '|all');
+  if (!r || r.shipped !== s || r.delivered !== d || r.in_transit !== t) { console.log('MISMATCH dispatch', c, r && [r.shipped, r.delivered, r.in_transit], 'expected', [s, d, t]); process.exitCode = 1; }
+}
+const da = dc('all|all|all');
+console.log('dispatch all', JSON.stringify({ orders: da.orders, shipped: da.shipped, delivered: da.delivered, in_transit: da.in_transit, late: da.transit_late, on_hold: da.on_hold, not_shipped: da.not_shipped, avg_days: da.avg_days, within_7: da.within_7, issues: da.issues, as_of: da.as_of }));
+const sumBy = (rows, f) => rows.reduce((a, r) => a + r[f], 0);
+const monthsTotal = sumBy(results.dsp_cube.filter((r) => r.exam === 'all' && r.courier === 'all' && r.month !== 'all'), 'orders');
+const regionsTotal = sumBy(results.dsp_regions.filter((r) => r.k.startsWith('all|all|all|')), 'orders');
+const examTotal = dc('ITO|all|all').orders + dc('LC|all|all').orders;
+const daysTotal = sumBy(results.dsp_days.filter((r) => r.k.startsWith('all|all|all|')), 'delivered');
+const shippedDaily = sumBy(results.dsp_daily.filter((r) => r.exam === 'all' && r.courier === 'all'), 'shipped');
+const openTotal = results.dsp_open.filter((r) => r.stage !== 'Delivered').length;
+console.log('dispatch months', monthsTotal, 'regions', regionsTotal, 'ITO+LC', examTotal, 'days bands', daysTotal, 'shipped per day', shippedDaily, 'open', openTotal);
+[monthsTotal, regionsTotal, examTotal].forEach((v) => { if (v !== da.orders) { console.log('MISMATCH dispatch orders', v); process.exitCode = 1; } });
+if (openTotal !== da.orders - da.delivered) { console.log('MISMATCH open list'); process.exitCode = 1; }
 console.log(process.exitCode ? 'FAILED' : 'ALL CHECKS PASSED');
 module.exports = results;

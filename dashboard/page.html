@@ -139,6 +139,55 @@
   .ito-saved-acts { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs); }
   .ito-legend-note { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
 
+  /* Department switcher: one strip above everything, each department with its own header and tabs */
+  .ito-depts { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm) var(--cds-gap-lg); align-items: center; justify-content: space-between; }
+  .ito-brand { display: flex; align-items: center; gap: var(--cds-gap-sm); min-width: 0; }
+  .ito-brand-mark { flex: none; display: grid; place-items: center; width: 2.25rem; height: 2.25rem; border-radius: var(--cds-radius); background: var(--ito-accent); color: #fff; font-size: var(--cds-font-size-caption); font-weight: 700; letter-spacing: .04em; }
+  .ito-brand-name { font-weight: var(--cds-font-weight-medium); line-height: 1.2; }
+  .ito-brand-sub { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .ito-dept-list { display: flex; gap: 4px; padding: 4px; border-radius: calc(var(--cds-radius) * 1.25); background: var(--color-panel); border: 1px solid var(--color-border-line); max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+  .ito-dept-list::-webkit-scrollbar { display: none; }
+  .ito-dept { flex: 0 0 auto; font: inherit; display: inline-flex; align-items: center; gap: .5rem; color: var(--color-fg-muted); background: none; border: 1px solid transparent; border-radius: var(--cds-radius); padding: var(--cds-pad-sm) var(--cds-pad-md); cursor: pointer; white-space: nowrap; }
+  .ito-dept svg { width: 1.05rem; height: 1.05rem; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .ito-dept:hover { color: var(--color-fg); background: var(--ito-tint); }
+  .ito-dept[aria-pressed="true"] { color: var(--color-fg); background: var(--ito-tint-strong); border-color: color-mix(in srgb, var(--ito-accent) 35%, transparent); font-weight: var(--cds-font-weight-medium); }
+  .ito-dept[aria-pressed="true"] svg { stroke: var(--ito-accent); }
+  .ito-dept:focus-visible { outline: 2px solid var(--ito-accent); outline-offset: 2px; }
+  .ito-hero[hidden], .ito-tab[hidden], .dsp-filters[hidden] { display: none; }
+
+  /* Dispatch */
+  .dsp-banner { flex: 1 1 100%; margin: 0; padding: var(--cds-pad-xs) var(--cds-pad-sm); border-radius: var(--cds-radius); background: color-mix(in srgb, var(--color-warn) 12%, transparent); font-size: var(--cds-font-size-caption); }
+  .dsp-banner[hidden] { display: none; }
+  .dsp-banner .ito-reset { padding: 0 0 0 var(--cds-gap-xs); }
+  .ito-kpi.is-warn .ito-kv { color: var(--color-warn); }
+  .ito-table tr.is-total td { font-weight: 600; border-top: 2px solid var(--color-border-line); }
+  .ito-table tr.is-picked td { background: var(--ito-tint); }
+  .dsp-open-table th, .dsp-open-table td { text-align: left; white-space: nowrap; }
+  .dsp-open-table td.num, .dsp-open-table th.num { text-align: right; }
+  .dsp-open-table td:last-child { white-space: normal; min-width: 14rem; color: var(--color-fg-muted); }
+  .dsp-pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: .75rem; font-weight: 600; background: color-mix(in srgb, var(--color-fg) 8%, transparent); }
+  .dsp-pill.is-ok { color: var(--color-ok); background: color-mix(in srgb, var(--color-ok) 14%, transparent); }
+  .dsp-pill.is-warn { color: var(--color-warn); background: color-mix(in srgb, var(--color-warn) 14%, transparent); }
+  .dsp-pill.is-bad { color: var(--color-bad); background: color-mix(in srgb, var(--color-bad) 14%, transparent); }
+  .dsp-open-seg .dsp-n { margin-left: .35rem; padding: 0 6px; border-radius: 999px; background: color-mix(in srgb, var(--color-fg) 8%, transparent); font-variant-numeric: tabular-nums; }
+  .dsp-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr)); gap: var(--cds-gap-md); margin: 0; }
+  .dsp-stats div { display: grid; gap: 2px; padding: var(--cds-pad-sm) var(--cds-pad-md); border-radius: var(--cds-radius); background: var(--color-bg); }
+  .dsp-stats dt { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .dsp-stats dd { margin: 0; font-family: var(--font-anthropic-serif); font-size: calc(var(--cds-font-size-heading) * 1.3); font-variant-numeric: tabular-nums; }
+
+  /* MIS and Support: any uploaded sheet */
+  .gx-empty { display: grid; justify-items: center; gap: var(--cds-gap-sm); text-align: center; padding: var(--cds-pad-xl) var(--cds-pad-lg); }
+  .gx-empty svg { width: 2.75rem; height: 2.75rem; fill: none; stroke: var(--ito-accent); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .gx-empty h2 { margin: 0; }
+  .gx-empty p { max-width: 56ch; }
+  .gx-cats { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); gap: var(--cds-gap-lg) var(--cds-gap-xl); }
+  .gx-cat { display: grid; gap: 2px; align-content: start; min-width: 0; }
+  .gx-cat h3 { margin: 0; font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); overflow-wrap: anywhere; }
+  .gx-hint { margin: 0; padding: var(--cds-pad-sm) var(--cds-pad-md); border-radius: var(--cds-radius); background: var(--ito-tint); font-size: var(--cds-font-size-caption); display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); align-items: center; }
+  .gx-hint[hidden], .ito-up [hidden], [data-gx-when][hidden], [data-gx-needs][hidden], [data-gx-sheets][hidden] { display: none; }
+  .gx-period { font-size: calc(var(--cds-font-size-title) * .7); }
+  .ito-steps { margin: 0; padding-left: 1.1rem; display: grid; gap: var(--cds-gap-xs); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+
   /* Tablets and phones */
   @media (max-width: 48rem) {
     .ito { gap: var(--cds-gap-md); }
@@ -204,11 +253,68 @@
     .ito-upresult .ito-card { overflow-x: auto; }
     .ito-upresult .ito-table th, .ito-upresult .ito-table td { white-space: nowrap; }
     .ito-drop { padding: var(--cds-pad-lg) var(--cds-pad-md); }
+    .ito-depts { gap: var(--cds-gap-sm); }
+    .ito-brand-sub { display: none; }
+    .ito-dept-list { width: 100%; }
+    .ito-dept { padding: var(--cds-pad-sm); gap: .35rem; }
+    .dsp-open-seg { display: grid; grid-template-columns: 1fr 1fr; }
   }
 </style>
 
 <div class="ito">
-  <header class="ito-hero" id="top">
+  <nav class="ito-depts" id="departments" aria-label="Departments">
+    <div class="ito-brand">
+      <span class="ito-brand-mark" aria-hidden="true">ITO</span>
+      <div><div class="ito-brand-name">ITO Operations</div><div class="ito-brand-sub">One dashboard for every department</div></div>
+    </div>
+    <div class="ito-dept-list" role="group" aria-label="Department">
+      <button type="button" class="ito-dept" id="dept-orders" data-dept-pick="orders" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/></svg>Orders &amp; payments</button>
+      <button type="button" class="ito-dept" id="dept-dispatch" data-dept-pick="dispatch" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 6h11v10H2zM13 9h4l4 4v3h-8z"/><circle cx="6" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg>Dispatch</button>
+      <button type="button" class="ito-dept" id="dept-mis" data-dept-pick="mis" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>MIS</button>
+      <button type="button" class="ito-dept" id="dept-support" data-dept-pick="support" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="2.5" y="13" width="4" height="6" rx="1.5"/><rect x="17.5" y="13" width="4" height="6" rx="1.5"/><path d="M20 19c0 1.5-2 2.5-5 2.5"/></svg>Support Team for Schools</button>
+    </div>
+  </nav>
+
+  <header class="ito-hero" id="dispatch-top" data-dept-only="dispatch" hidden>
+    <div>
+      <p class="ito-eyebrow">Dispatch department · Study material 2026-27</p>
+      <h1>Study material dispatch</h1>
+      <p class="ito-lede">Workbook, question-paper, guide and textbook orders for ITO and Little Champ (LC) schools: what has shipped, what is delivered, how long each courier takes, and which schools still need a follow-up.</p>
+    </div>
+    <div class="ito-chips" aria-label="About this data">
+      <span class="ito-chip">Data up to <span data-draw="dsp-asof" data-source="dsp_cube">—</span></span>
+      <span class="ito-chip">Delivered = "Delivery Done" or a delivery date</span>
+      <span class="ito-chip">LC = school code starts with LC</span>
+    </div>
+  </header>
+
+  <header class="ito-hero" id="mis-top" data-dept-only="mis" hidden>
+    <div>
+      <p class="ito-eyebrow">MIS department · Reports from your sheets</p>
+      <h1>MIS reports</h1>
+      <p class="ito-lede">Upload any MIS sheet (registrations, enrolments, results, attendance, targets) as Excel or CSV. The page reads every entry and builds the report: entries by month, status and category breakdowns, totals for number columns, and an Excel download.</p>
+    </div>
+    <div class="ito-chips" aria-label="About this page">
+      <span class="ito-chip">Excel .xlsx or CSV</span>
+      <span class="ito-chip">Read in your browser</span>
+      <span class="ito-chip">Save to share with the team</span>
+    </div>
+  </header>
+
+  <header class="ito-hero" id="support-top" data-dept-only="support" hidden>
+    <div>
+      <p class="ito-eyebrow">Support Team for Schools · Requests and tickets</p>
+      <h1>School support</h1>
+      <p class="ito-lede">Upload the support tracker or ticket export (Excel or CSV) to see requests by month, how many are resolved or still open, the average time to close, and the most common issue types, schools and owners.</p>
+    </div>
+    <div class="ito-chips" aria-label="About this page">
+      <span class="ito-chip">Excel .xlsx or CSV</span>
+      <span class="ito-chip">Read in your browser</span>
+      <span class="ito-chip">Save to share with the team</span>
+    </div>
+  </header>
+
+  <header class="ito-hero" id="top" data-dept-only="orders">
     <div>
       <p class="ito-eyebrow">ITO Olympiad · Orders and payments</p>
       <h1>ITO orders &amp; payments</h1>
@@ -222,13 +328,41 @@
   </header>
 
   <nav class="ito-tabs" role="tablist" aria-label="Pages">
-    <button type="button" class="ito-tab" role="tab" id="tab-overview" data-tab="overview" aria-controls="overview" aria-selected="true">Overview</button>
-    <button type="button" class="ito-tab" role="tab" id="tab-trends" data-tab="trends" aria-controls="trends" aria-selected="false" tabindex="-1">Trends</button>
-    <button type="button" class="ito-tab" role="tab" id="tab-conversion" data-tab="conversion" aria-controls="conversion" aria-selected="false" tabindex="-1">Funnel &amp; recovery</button>
-    <button type="button" class="ito-tab" role="tab" id="tab-products" data-tab="products" aria-controls="products" aria-selected="false" tabindex="-1">Plans &amp; products</button>
-    <button type="button" class="ito-tab" role="tab" id="tab-reports" data-tab="reports" aria-controls="reports" aria-selected="false" tabindex="-1">Upload &amp; download reports</button>
-    <button type="button" class="ito-tab" role="tab" id="tab-about" data-tab="about" aria-controls="about" aria-selected="false" tabindex="-1">How to read this</button>
+    <button type="button" class="ito-tab" role="tab" id="tab-overview" data-tab="overview" data-dept="orders" aria-controls="overview" aria-selected="true">Overview</button>
+    <button type="button" class="ito-tab" role="tab" id="tab-trends" data-tab="trends" data-dept="orders" aria-controls="trends" aria-selected="false" tabindex="-1">Trends</button>
+    <button type="button" class="ito-tab" role="tab" id="tab-conversion" data-tab="conversion" data-dept="orders" aria-controls="conversion" aria-selected="false" tabindex="-1">Funnel &amp; recovery</button>
+    <button type="button" class="ito-tab" role="tab" id="tab-products" data-tab="products" data-dept="orders" aria-controls="products" aria-selected="false" tabindex="-1">Plans &amp; products</button>
+    <button type="button" class="ito-tab" role="tab" id="tab-reports" data-tab="reports" data-dept="orders" aria-controls="reports" aria-selected="false" tabindex="-1">Upload &amp; download reports</button>
+    <button type="button" class="ito-tab" role="tab" id="tab-about" data-tab="about" data-dept="orders" aria-controls="about" aria-selected="false" tabindex="-1">How to read this</button>
+    <button type="button" class="ito-tab" role="tab" id="tab-dsp-overview" data-tab="dsp-overview" data-dept="dispatch" aria-controls="dsp-overview" aria-selected="false" tabindex="-1" hidden>Overview</button>
+    <button type="button" class="ito-tab" role="tab" id="tab-dsp-couriers" data-tab="dsp-couriers" data-dept="dispatch" aria-controls="dsp-couriers" aria-selected="false" tabindex="-1" hidden>Couriers &amp; delivery time</button>
+    <button type="button" class="ito-tab" role="tab" id="tab-dsp-regions" data-tab="dsp-regions" data-dept="dispatch" aria-controls="dsp-regions" aria-selected="false" tabindex="-1" hidden>Regions &amp; study material</button>
+    <button type="button" class="ito-tab" role="tab" id="tab-dsp-followup" data-tab="dsp-followup" data-dept="dispatch" aria-controls="dsp-followup" aria-selected="false" tabindex="-1" hidden>Follow-up list</button>
+    <button type="button" class="ito-tab" role="tab" id="tab-dsp-upload" data-tab="dsp-upload" data-dept="dispatch" aria-controls="dsp-upload" aria-selected="false" tabindex="-1" hidden>Upload &amp; download</button>
+    <button type="button" class="ito-tab" role="tab" id="tab-mis-report" data-tab="mis-report" data-dept="mis" aria-controls="mis-report" aria-selected="false" tabindex="-1" hidden>Report</button>
+    <button type="button" class="ito-tab" role="tab" id="tab-mis-upload" data-tab="mis-upload" data-dept="mis" aria-controls="mis-upload" aria-selected="false" tabindex="-1" hidden>Upload &amp; saved reports</button>
+    <button type="button" class="ito-tab" role="tab" id="tab-support-report" data-tab="support-report" data-dept="support" aria-controls="support-report" aria-selected="false" tabindex="-1" hidden>Report</button>
+    <button type="button" class="ito-tab" role="tab" id="tab-support-upload" data-tab="support-upload" data-dept="support" aria-controls="support-upload" aria-selected="false" tabindex="-1" hidden>Upload &amp; saved reports</button>
   </nav>
+
+  <section class="ito-filters dsp-filters" id="dsp-filters" aria-label="Dispatch filters" hidden>
+    <label class="ito-field">Order month
+      <select data-draw="dsp-month-select" data-source="dsp_cube" aria-label="Order month"></select>
+    </label>
+    <label class="ito-field">Courier
+      <select data-draw="dsp-courier-select" data-source="dsp_cube" aria-label="Courier"></select>
+    </label>
+    <div class="ito-field ito-field-tier">Programme
+      <div class="ito-seg" role="group" aria-label="Programme">
+        <button type="button" data-exam-pick="all" aria-pressed="true">All</button>
+        <button type="button" data-exam-pick="ITO" aria-pressed="false">ITO</button>
+        <button type="button" data-exam-pick="LC" aria-pressed="false">Little Champ</button>
+      </div>
+    </div>
+    <button type="button" class="ito-reset dsp-reset">Reset filters</button>
+    <span class="ito-scope" data-draw="dsp-scope">—</span>
+    <p class="dsp-banner" data-dsp-needs="override" hidden>Showing your uploaded file <b data-draw="dsp-source-name">—</b>, not the dashboard's own dispatch sheet. <button type="button" class="ito-reset dsp-back">Back to the dashboard's data</button></p>
+  </section>
 
   <section class="ito-filters" id="filters" aria-label="Filters">
     <label class="ito-field">Month
@@ -598,6 +732,509 @@
       </ul>
     </section>
   </section>
+
+  <!-- ================= DISPATCH: OVERVIEW ================= -->
+  <section class="ito-panel" id="dsp-overview" data-panel="dsp-overview" data-dept="dispatch" role="tabpanel" aria-labelledby="tab-dsp-overview" hidden>
+    <p class="ito-take"><b data-draw="dsp-kpi" data-source="dsp_cube" data-field="delivery_rate" data-fmt="pct">—</b> of shipped orders are delivered. <b data-draw="dsp-kpi" data-source="dsp_cube" data-field="in_transit" data-fmt="int">—</b> are still with couriers, <b data-draw="dsp-kpi" data-source="dsp_cube" data-field="transit_late" data-fmt="int">—</b> of them for more than 7 days, and <b data-draw="dsp-kpi" data-source="dsp_cube" data-field="pending_ship" data-fmt="int">—</b> orders haven't shipped yet. The follow-up list has every one of them.</p>
+
+    <section class="ito-kpis" id="dsp-kpis" aria-label="Dispatch headline figures">
+      <div class="ito-kpi">
+        <h3>School orders</h3>
+        <div class="ito-kv" data-draw="dsp-kpi" data-source="dsp_cube" data-field="orders" data-fmt="int">—</div>
+        <div class="ito-sub"><span data-draw="dsp-kpi" data-source="dsp_cube" data-field="schools" data-fmt="int">—</span> schools</div>
+      </div>
+      <div class="ito-kpi">
+        <h3>Shipped</h3>
+        <div class="ito-kv" data-draw="dsp-kpi" data-source="dsp_cube" data-field="shipped" data-fmt="int">—</div>
+        <div class="ito-sub"><span data-draw="dsp-kpi" data-source="dsp_cube" data-field="shipped_share" data-fmt="pct">—</span> of orders handed to a courier</div>
+      </div>
+      <div class="ito-kpi">
+        <h3>Delivered</h3>
+        <div class="ito-kv" data-draw="dsp-kpi" data-source="dsp_cube" data-field="delivered" data-fmt="int">—</div>
+        <div class="ito-sub"><span data-draw="dsp-kpi" data-source="dsp_cube" data-field="delivery_rate" data-fmt="pct">—</span> of shipped orders</div>
+      </div>
+      <div class="ito-kpi is-warn">
+        <h3>In transit</h3>
+        <div class="ito-kv" data-draw="dsp-kpi" data-source="dsp_cube" data-field="in_transit" data-fmt="int">—</div>
+        <div class="ito-sub"><span data-draw="dsp-kpi" data-source="dsp_cube" data-field="transit_late" data-fmt="int">—</span> for more than 7 days</div>
+      </div>
+      <div class="ito-kpi is-bad">
+        <h3>Not shipped yet</h3>
+        <div class="ito-kv" data-draw="dsp-kpi" data-source="dsp_cube" data-field="pending_ship" data-fmt="int">—</div>
+        <div class="ito-sub"><span data-draw="dsp-kpi" data-source="dsp_cube" data-field="on_hold" data-fmt="int">—</span> on hold, the rest packed</div>
+      </div>
+      <div class="ito-kpi">
+        <h3>Average delivery time</h3>
+        <div class="ito-kv" data-draw="dsp-kpi" data-source="dsp_cube" data-field="avg_days" data-fmt="days">—</div>
+        <div class="ito-sub"><span data-draw="dsp-kpi" data-source="dsp_cube" data-field="within_7" data-fmt="pct">—</span> delivered within 7 days</div>
+      </div>
+    </section>
+
+    <section class="ito-grid">
+      <article class="ito-card" id="dsp-pipeline-card">
+        <h2>Where every order is</h2>
+        <p class="note">School orders by stage, as a share of all orders in this view. Red is shipments in transit for more than 7 days.</p>
+        <div class="ito-funnel" data-draw="dsp-pipeline" data-source="dsp_cube"></div>
+      </article>
+      <article class="ito-card" id="dsp-trend-card">
+        <h2>Orders by month</h2>
+        <p class="note">Grey is orders received in the month; blue is how many of them are delivered so far. Click a bar to filter to that month.</p>
+        <div class="ito-legend"><span style="--ito-c: var(--cds-chart-muted)">School orders</span><span style="--ito-c: var(--ito-accent)">Delivered</span></div>
+        <div class="ito-chart" data-draw="dsp-trend" data-source="dsp_cube"></div>
+      </article>
+    </section>
+
+    <article class="ito-card is-wide" id="dsp-courier-card">
+      <h2>Delivery rate by courier</h2>
+      <p class="note">Delivered ÷ shipped for each courier, with the shipments still in transit. Red is the lowest rate (couriers with 20+ shipments). Click a courier to filter the whole department.</p>
+      <div class="ito-carts" data-draw="dsp-courier-bars" data-source="dsp_cube"></div>
+    </article>
+  </section>
+
+  <!-- ================= DISPATCH: COURIERS ================= -->
+  <section class="ito-panel" id="dsp-couriers" data-panel="dsp-couriers" data-dept="dispatch" role="tabpanel" aria-labelledby="tab-dsp-couriers" hidden>
+    <article class="ito-card is-wide" id="dsp-scorecard">
+      <h2>Courier scorecard</h2>
+      <p class="note">Delivery time is days from dispatch to delivery. "Over 7 days" counts shipments still in transit more than a week after dispatch, up to the latest date in the sheet. Returns and re-routes come from the notes column (RTO, "send to speed"…).</p>
+      <div class="ito-tablebox">
+        <table class="ito-table dsp-courier-table" data-source="dsp_cube" data-row-key="k">
+          <thead><tr><th data-field="courier">Courier</th><th data-field="shipped">Shipped</th><th data-field="delivered">Delivered</th><th data-field="delivery_rate">Delivery rate</th><th data-field="in_transit">In transit</th><th data-field="transit_late">Over 7 days</th><th data-field="avg_days">Avg delivery</th><th data-field="median_days">Median delivery</th><th data-field="within_7">Within 7 days</th><th data-field="issues">Returns &amp; re-routes</th></tr></thead>
+          <tbody data-draw="dsp-courier-rows"></tbody>
+        </table>
+      </div>
+    </article>
+    <article class="ito-card is-wide" id="dsp-daily-card">
+      <h2>Shipments per day</h2>
+      <p class="note">Orders handed to couriers each day, and the 7-day average of deliveries. The month filter zooms to that month's dates.</p>
+      <div class="ito-legend"><span style="--ito-c: var(--ito-accent)">Shipped</span><span class="line" style="--ito-c: var(--ito-accent-3)">7-day average delivered</span></div>
+      <div class="ito-chart is-tall" data-draw="dsp-daily" data-source="dsp_daily"></div>
+    </article>
+    <section class="ito-grid">
+      <article class="ito-card" id="dsp-days-card">
+        <h2>Delivery time</h2>
+        <p class="note">Delivered orders by days from dispatch to delivery. Orange and red are slower than a week.</p>
+        <div class="ito-chart is-short" data-draw="dsp-days" data-source="dsp_days"></div>
+      </article>
+      <article class="ito-card" id="dsp-turnaround">
+        <h2>Turnaround</h2>
+        <p class="note">For the orders in this view.</p>
+        <dl class="dsp-stats">
+          <div><dt>Order to dispatch, average</dt><dd data-draw="dsp-kpi" data-source="dsp_cube" data-field="avg_lag" data-fmt="days">—</dd></div>
+          <div><dt>Dispatch to delivery, average</dt><dd data-draw="dsp-kpi" data-source="dsp_cube" data-field="avg_days" data-fmt="days">—</dd></div>
+          <div><dt>Dispatch to delivery, median</dt><dd data-draw="dsp-kpi" data-source="dsp_cube" data-field="median_days" data-fmt="days">—</dd></div>
+          <div><dt>Delivered within 7 days</dt><dd data-draw="dsp-kpi" data-source="dsp_cube" data-field="within_7" data-fmt="pct">—</dd></div>
+          <div><dt>In transit over 7 days</dt><dd data-draw="dsp-kpi" data-source="dsp_cube" data-field="transit_late" data-fmt="int">—</dd></div>
+          <div><dt>Returns &amp; re-routes</dt><dd data-draw="dsp-kpi" data-source="dsp_cube" data-field="issues" data-fmt="int">—</dd></div>
+        </dl>
+      </article>
+    </section>
+  </section>
+
+  <!-- ================= DISPATCH: REGIONS & MATERIAL ================= -->
+  <section class="ito-panel" id="dsp-regions" data-panel="dsp-regions" data-dept="dispatch" role="tabpanel" aria-labelledby="tab-dsp-regions" hidden>
+    <article class="ito-card is-wide" id="dsp-region-card">
+      <div class="ito-card-head">
+        <h2>States and regions</h2>
+        <input type="search" class="ito-search dsp-region-search" placeholder="Search regions" aria-label="Search regions">
+      </div>
+      <p class="note">The region is the two letters at the start of the school code (MH1983 → MH, LCMH0759 → MH). Click a column to sort.</p>
+      <div class="ito-tablebox">
+        <table class="ito-table dsp-region-table" data-source="dsp_regions" data-row-key="k">
+          <thead><tr><th data-field="region" class="is-sort" data-sort="region">Region</th><th data-field="orders" class="is-sort" data-sort="orders" aria-sort="descending">Orders</th><th data-field="shipped" class="is-sort" data-sort="shipped">Shipped</th><th data-field="delivered" class="is-sort" data-sort="delivered">Delivered</th><th data-field="delivery_rate" class="is-sort" data-sort="delivery_rate">Delivery rate</th><th data-field="in_transit" class="is-sort" data-sort="in_transit">In transit</th><th data-field="pending_ship" class="is-sort" data-sort="pending_ship">Not shipped</th><th data-field="units" class="is-sort" data-sort="units">Books &amp; papers</th><th data-field="avg_days" class="is-sort" data-sort="avg_days">Avg delivery</th></tr></thead>
+          <tbody data-draw="dsp-region-rows"></tbody>
+        </table>
+      </div>
+    </article>
+    <section class="ito-grid">
+      <article class="ito-card" id="dsp-units-card">
+        <h2>Material sent</h2>
+        <p class="note">Copies in the school orders in this view, by type.</p>
+        <div class="ito-carts" data-draw="dsp-units" data-source="dsp_cube"></div>
+      </article>
+      <article class="ito-card" id="dsp-material-card">
+        <h2>Study material: packed and pending</h2>
+        <p class="note">From the "Total Order Summary" sheet, for the whole season. Follows the programme filter only.</p>
+        <p class="ito-msg" data-dsp-needs="nomaterial" hidden>The uploaded file has no "Total Order Summary" sheet.</p>
+        <div class="ito-wide">
+          <table class="ito-table" data-source="dsp_material" data-row-key="k">
+            <thead><tr><th data-field="exam">Programme</th><th data-field="item">Item</th><th data-field="count">Ordered</th><th data-field="packed">Packed</th><th data-field="dispatch_today">Dispatched today</th><th data-field="pending">Pending</th><th data-field="packed_share">Packed share</th></tr></thead>
+            <tbody data-draw="dsp-material-rows"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+  </section>
+
+  <!-- ================= DISPATCH: FOLLOW-UP ================= -->
+  <section class="ito-panel" id="dsp-followup" data-panel="dsp-followup" data-dept="dispatch" role="tabpanel" aria-labelledby="tab-dsp-followup" hidden>
+    <article class="ito-card is-wide" id="dsp-followup-card">
+      <div class="ito-card-head">
+        <h2>Shipments to follow up</h2>
+        <input type="search" class="ito-search dsp-open-search" placeholder="Search school, AWB or note" aria-label="Search shipments">
+      </div>
+      <p class="note">Every order that isn't delivered, plus returns (RTO), re-routed and lost shipments. Days open counts from dispatch for shipments in transit, and from the order date for orders not shipped, up to the latest date in the sheet.</p>
+      <div class="ito-seg dsp-open-seg" role="group" aria-label="Show">
+        <button type="button" data-open-pick="open" aria-pressed="true">Not delivered<span class="dsp-n" data-draw="dsp-open-n" data-pick="open" data-source="dsp_open">—</span></button>
+        <button type="button" data-open-pick="late" aria-pressed="false">In transit over 7 days<span class="dsp-n" data-draw="dsp-open-n" data-pick="late" data-source="dsp_open">—</span></button>
+        <button type="button" data-open-pick="transit" aria-pressed="false">All in transit<span class="dsp-n" data-draw="dsp-open-n" data-pick="transit" data-source="dsp_open">—</span></button>
+        <button type="button" data-open-pick="hold" aria-pressed="false">On hold<span class="dsp-n" data-draw="dsp-open-n" data-pick="hold" data-source="dsp_open">—</span></button>
+        <button type="button" data-open-pick="notshipped" aria-pressed="false">Packed, no courier<span class="dsp-n" data-draw="dsp-open-n" data-pick="notshipped" data-source="dsp_open">—</span></button>
+        <button type="button" data-open-pick="issues" aria-pressed="false">Returns &amp; re-routes<span class="dsp-n" data-draw="dsp-open-n" data-pick="issues" data-source="dsp_open">—</span></button>
+      </div>
+      <div class="ito-actions">
+        <button type="button" class="ito-btn dsp-dl-open">Download this list (CSV)</button>
+        <span class="ito-scope" data-draw="dsp-open-count" data-source="dsp_open">—</span>
+      </div>
+      <div class="ito-tablebox">
+        <table class="ito-table dsp-open-table" data-source="dsp_open" data-row-key="k">
+          <thead><tr><th data-field="sno" class="is-sort" data-sort="sno">S.No.</th><th data-field="school" class="is-sort" data-sort="school">School code</th><th data-field="region" class="is-sort" data-sort="region">Region</th><th data-field="exam">Programme</th><th data-field="courier" class="is-sort" data-sort="courier">Courier</th><th data-field="pod">POD / AWB</th><th data-field="order_date" class="is-sort" data-sort="order_date">Order date</th><th data-field="dispatch_date" class="is-sort" data-sort="dispatch_date">Dispatched</th><th data-field="stage" class="is-sort" data-sort="stage">Status</th><th data-field="days_open" class="is-sort num" data-sort="days_open" aria-sort="descending">Days open</th><th data-field="remark">Issue / note</th></tr></thead>
+          <tbody data-draw="dsp-open-rows"></tbody>
+        </table>
+      </div>
+    </article>
+  </section>
+
+  <!-- ================= DISPATCH: UPLOAD ================= -->
+  <section class="ito-panel" id="dsp-upload" data-panel="dsp-upload" data-dept="dispatch" role="tabpanel" aria-labelledby="tab-dsp-upload" hidden>
+    <section class="ito-grid">
+      <article class="ito-card" id="dsp-upload-card">
+        <h2>Upload a dispatch sheet</h2>
+        <p>Add the latest dispatch workbook (.xlsx) or a CSV of its "Detailed Dispatch Sheet". Every Dispatch tab then shows your file, with the same filters and downloads.</p>
+        <label class="ito-drop dsp-drop">
+          <input type="file" class="dsp-file" accept=".csv,.tsv,.txt,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" multiple>
+          <span class="ito-drop-title">Choose a dispatch file or drop it here</span>
+          <span class="ito-sub">.xlsx or CSV · several files are combined</span>
+        </label>
+        <p class="ito-msg" data-dsp-msg="reading" hidden>Reading your file…</p>
+        <p class="ito-msg bad" data-dsp-msg="error" hidden><span data-draw="dsp-error">—</span></p>
+        <p class="ito-msg bad" data-dsp-msg="xls" hidden>Old .xls files can't be read here. Open it in Excel, save it as .xlsx or CSV, and upload it again.</p>
+        <p class="ito-msg">The file is read in your own browser and isn't uploaded anywhere. Only a summary is kept, and only if you choose "Save for the team".</p>
+      </article>
+      <article class="ito-card" id="dsp-columns-card">
+        <h2>What the page looks for</h2>
+        <p>Column names are matched loosely, so "COURIERName", "Courier" and "Courier name" all work.</p>
+        <ul class="ito-steps">
+          <li><b>Needed:</b> courier, school code, and POD / AWB number or dispatch date.</li>
+          <li><b>Used when present:</b> order date, number of workbooks, PYQPs, guides and textbooks, order status (Dispatch / Hold), dispatch date, delivery date, days, status, and notes after the status (RTO, re-routed).</li>
+          <li>A "Total Order Summary" sheet in the same workbook fills the study-material table.</li>
+        </ul>
+      </article>
+    </section>
+    <article class="ito-card" id="dsp-current">
+      <h2>Data in the Dispatch tabs</h2>
+      <p data-draw="dsp-source" data-source="dsp_cube">—</p>
+      <div class="ito-actions">
+        <button type="button" class="ito-btn is-primary dsp-dl-xlsx">Download dispatch report (Excel)</button>
+        <button type="button" class="ito-btn dsp-dl-open" data-pick="open">Follow-up list (CSV)</button>
+        <button type="button" class="ito-btn dsp-dl-rows" data-dsp-needs="rows" hidden>Cleaned dispatch rows (CSV)</button>
+        <button type="button" class="ito-btn dsp-save" data-dsp-needs="save" hidden>Save for the team</button>
+        <button type="button" class="ito-btn is-quiet dsp-back" data-dsp-needs="override" hidden>Back to the dashboard's data</button>
+        <span class="ito-msg" data-dsp-save="saving" hidden>Saving…</span>
+        <span class="ito-msg ok" data-dsp-save="saved" hidden>Saved. Everyone with access can open it under Saved dispatch reports.</span>
+        <span class="ito-msg bad" data-dsp-save="failed" hidden>Couldn't save. Saving needs edit access to this dashboard.</span>
+        <span class="ito-msg" data-dsp-needs="noedit" hidden>Ask an editor of this dashboard to save it for the team.</span>
+      </div>
+      <p class="ito-msg">The Excel report follows the filters: summary, couriers, months, regions, delivery time, follow-up list, returns and study material.</p>
+    </article>
+    <article class="ito-card ito-saved" id="dsp-saved-card">
+      <h2>Saved dispatch reports</h2>
+      <p>Dispatch files the team saved: the summary tables and follow-up list, without the full sheet. Open one to see it in every Dispatch tab.</p>
+      <p class="ito-msg" data-dsp-saved-state="loading">Loading saved reports…</p>
+      <p class="ito-msg" data-dsp-saved-state="empty" hidden>No saved dispatch reports yet. Upload a file above, then choose "Save for the team".</p>
+      <p class="ito-msg" data-dsp-saved-state="off" hidden>Saved reports aren't available in this view.</p>
+      <ul data-draw="dsp-saved"></ul>
+    </article>
+  </section>
+
+  <!-- ================= MIS: REPORT ================= -->
+  <section class="ito-panel" id="mis-report" data-panel="mis-report" data-dept="mis" data-dscope="mis" role="tabpanel" aria-labelledby="tab-mis-report" hidden>
+    <article class="ito-card gx-empty" data-gx-when="empty">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg>
+      <h2>No MIS report yet</h2>
+      <p>Upload an MIS sheet (school registrations, student enrolments, results, attendance or targets) and this page builds the report. Once someone saves a report for the team, the newest one opens here.</p>
+      <button type="button" class="ito-btn is-primary" data-goto="mis-upload">Upload a file</button>
+    </article>
+
+    <div class="ito-upresult" data-gx-when="report" hidden>
+      <div class="ito-uphead">
+        <div>
+          <h2>Report: <span data-draw="gx-name">—</span></h2>
+          <p data-draw="gx-meta">—</p>
+          <p data-gx-when="saved" hidden>Saved by the team: the summary tables are kept, not the rows, so the preview and the group-by table need the original file.</p>
+        </div>
+        <button type="button" class="ito-btn is-quiet gx-clear">Close report</button>
+      </div>
+      <p class="gx-hint" data-gx-hint="dispatch" hidden>This looks like a dispatch sheet. The Dispatch department reads it in full: couriers, delivery time and the follow-up list. <button type="button" class="ito-btn gx-to-dispatch">Open it in Dispatch</button></p>
+      <p class="gx-hint" data-gx-hint="orders" hidden>This looks like an ITO order export. Orders &amp; payments gives the full order report for it. <button type="button" class="ito-btn" data-goto="reports">Go to the order upload</button></p>
+      <div class="ito-actions">
+        <button type="button" class="ito-btn is-primary gx-dl-xlsx">Download report (Excel)</button>
+        <button type="button" class="ito-btn gx-dl-cols">Column summary (CSV)</button>
+        <button type="button" class="ito-btn gx-save" data-gx-needs="save" hidden>Save for the team</button>
+        <span class="ito-msg" data-gx-save="saving" hidden>Saving…</span>
+        <span class="ito-msg ok" data-gx-save="saved" hidden>Saved. The team sees it on this page and under Saved reports.</span>
+        <span class="ito-msg bad" data-gx-save="failed" hidden>Couldn't save. Saving needs edit access to this dashboard.</span>
+        <span class="ito-msg" data-gx-needs="noedit" hidden>Ask an editor of this dashboard to save it for the team.</span>
+      </div>
+
+      <section class="ito-kpis" aria-label="Headline figures for the file">
+        <div class="ito-kpi"><h3>Entries</h3><div class="ito-kv" data-draw="gx-kpi" data-field="rows" data-fmt="int">—</div><div class="ito-sub">Rows with any value</div></div>
+        <div class="ito-kpi" data-gx-needs="date" hidden><h3>Period covered</h3><div class="ito-kv gx-period" data-draw="gx-kpi" data-field="period">—</div><div class="ito-sub">By <span data-draw="gx-col" data-field="dateCol">—</span></div></div>
+        <div class="ito-kpi" data-gx-needs="status" hidden><h3>Completed</h3><div class="ito-kv" data-draw="gx-kpi" data-field="done" data-fmt="int">—</div><div class="ito-sub"><span data-draw="gx-kpi" data-field="doneRate" data-fmt="pct">—</span> of entries with a status</div></div>
+        <div class="ito-kpi is-bad" data-gx-needs="status" hidden><h3>Not completed</h3><div class="ito-kv" data-draw="gx-kpi" data-field="open" data-fmt="int">—</div><div class="ito-sub">From <span data-draw="gx-col" data-field="statusCol">—</span></div></div>
+        <div class="ito-kpi" data-gx-needs="duration" hidden><h3>Average time to close</h3><div class="ito-kv" data-draw="gx-kpi" data-field="avgClose" data-fmt="days">—</div><div class="ito-sub">Median <span data-draw="gx-kpi" data-field="medianClose" data-fmt="days">—</span>, to <span data-draw="gx-col" data-field="endCol">—</span></div></div>
+        <div class="ito-kpi"><h3>Columns</h3><div class="ito-kv" data-draw="gx-kpi" data-field="columns" data-fmt="int">—</div><div class="ito-sub">Read from the sheet</div></div>
+      </section>
+
+      <section class="ito-grid">
+        <article class="ito-card" data-gx-needs="date" hidden>
+          <h2>Entries by month</h2>
+          <p class="note">Counted by <b data-draw="gx-col" data-field="dateCol">—</b>.<span data-gx-needs="status" hidden> Blue is the part completed.</span></p>
+          <div class="ito-chart" data-draw="gx-month"></div>
+        </article>
+        <article class="ito-card" data-gx-needs="status" hidden>
+          <h2>By status</h2>
+          <p class="note">Share of all entries for each value of <b data-draw="gx-col" data-field="statusCol">—</b>. Green values count as completed.</p>
+          <div class="ito-carts" data-draw="gx-status"></div>
+        </article>
+      </section>
+
+      <article class="ito-card is-wide" data-gx-needs="cats" hidden>
+        <h2>Top values</h2>
+        <p class="note">The most common values in each column that groups the entries (up to 10 each). Columns with names, emails or phone numbers are left out.</p>
+        <div class="gx-cats" data-draw="gx-cats"></div>
+      </article>
+
+      <section class="ito-grid">
+        <article class="ito-card" data-gx-needs="rows" hidden>
+          <h2>Group and count</h2>
+          <p class="note">Pick a column to count rows by, and optionally a number column to add up.</p>
+          <div class="ito-gen-pick">
+            <label>Group by <select data-draw="gx-by" aria-label="Group by"></select></label>
+            <label>Add up <select data-draw="gx-sum" aria-label="Add up"></select></label>
+            <button type="button" class="ito-btn gx-dl-group">Download this table (CSV)</button>
+          </div>
+          <div class="ito-tablebox" data-gx-needs="group" hidden><table class="ito-table" data-draw="gx-group"></table></div>
+        </article>
+        <article class="ito-card" data-gx-needs="saved group" hidden>
+          <h2>Grouped by <span data-draw="gx-col" data-field="by">—</span></h2>
+          <p class="note">As saved with the report.</p>
+          <div class="ito-tablebox"><table class="ito-table" data-draw="gx-group"></table></div>
+        </article>
+        <article class="ito-card" data-gx-needs="nums" hidden>
+          <h2>Number columns</h2>
+          <p class="note">Totals and ranges for columns that hold numbers (IDs, codes and serial numbers are left out).</p>
+          <div class="ito-wide">
+            <table class="ito-table">
+              <thead><tr><th>Column</th><th>Filled</th><th>Total</th><th>Average</th><th>Lowest</th><th>Highest</th></tr></thead>
+              <tbody data-draw="gx-nums"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <article class="ito-card is-wide">
+        <h2>Columns</h2>
+        <p class="note">What each column holds. Totals and ranges are shown for number columns.</p>
+        <div class="ito-wide">
+          <table class="ito-table">
+            <thead><tr><th>Column</th><th>Type</th><th>Filled</th><th>Empty</th><th>Distinct values</th><th>Total</th><th>Lowest</th><th>Highest</th></tr></thead>
+            <tbody data-draw="gx-cols"></tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="ito-card is-wide" data-gx-needs="rows" hidden>
+        <h2>First 50 rows</h2>
+        <p class="note">A preview of the file as it was read. It stays in your browser.</p>
+        <div class="ito-wide"><table class="ito-table" data-draw="gx-preview"></table></div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ================= MIS: UPLOAD ================= -->
+  <section class="ito-panel" id="mis-upload" data-panel="mis-upload" data-dept="mis" data-dscope="mis" role="tabpanel" aria-labelledby="tab-mis-upload" hidden>
+    <section class="ito-grid">
+      <article class="ito-card ito-up-gx">
+        <h2>Upload a MIS file</h2>
+        <p>Any Excel or CSV sheet: registrations, enrolments, results, attendance, targets or a weekly MIS. The report appears on the Report tab.</p>
+        <label class="ito-drop gx-drop">
+          <input type="file" class="gx-file" accept=".csv,.tsv,.txt,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" multiple>
+          <span class="ito-drop-title">Choose files or drop them here</span>
+          <span class="ito-sub">.xlsx or CSV · several files with the same columns are combined</span>
+        </label>
+        <div class="ito-opts">
+          <label data-gx-sheets hidden>Sheet <select data-draw="gx-sheet" aria-label="Sheet"></select></label>
+        </div>
+        <p class="ito-msg" data-gx-msg="reading" hidden>Reading your file…</p>
+        <p class="ito-msg bad" data-gx-msg="error" hidden><span data-draw="gx-error">—</span></p>
+        <p class="ito-msg bad" data-gx-msg="xls" hidden>Old .xls files can't be read here. Open it in Excel, save it as .xlsx or CSV, and upload it again.</p>
+        <p class="ito-msg">The file is read in your own browser and isn't uploaded anywhere. Only a summary is kept, and only if you choose "Save for the team".</p>
+      </article>
+      <article class="ito-card">
+        <h2>How the report is built</h2>
+        <ul class="ito-steps">
+          <li>The header row is found even under a title row. Every other non-empty row is an entry.</li>
+          <li>A <b>date</b> column (registration, order or entry date) gives the monthly chart; a second date (completed or closed date) gives the time to close.</li>
+          <li>A <b>status</b> column gives completed and open counts. Values like Done, Closed, Resolved, Completed and Delivered count as completed.</li>
+          <li>Short text columns (state, city, board, class, subject, status) become top-value charts. Number columns are totalled.</li>
+          <li>Names, emails and phone numbers are never charted or saved.</li>
+        </ul>
+      </article>
+    </section>
+    <article class="ito-card ito-saved">
+      <h2>Saved MIS reports</h2>
+      <p>Reports the team saved: summary tables only, with no rows, names, emails or phone numbers. The newest opens on the Report tab for everyone.</p>
+      <p class="ito-msg" data-gx-saved-state="loading">Loading saved reports…</p>
+      <p class="ito-msg" data-gx-saved-state="empty" hidden>No saved reports yet. Upload a file above, then choose "Save for the team" on the Report tab.</p>
+      <p class="ito-msg" data-gx-saved-state="off" hidden>Saved reports aren't available in this view.</p>
+      <ul data-draw="gx-saved"></ul>
+    </article>
+  </section>
+
+  <!-- ================= SUPPORT: REPORT ================= -->
+  <section class="ito-panel" id="support-report" data-panel="support-report" data-dept="support" data-dscope="support" role="tabpanel" aria-labelledby="tab-support-report" hidden>
+    <article class="ito-card gx-empty" data-gx-when="empty">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg>
+      <h2>No support report yet</h2>
+      <p>Upload the support tracker or ticket export and this page builds the report: requests by month, resolved and open counts, time to close, and the most common issues. Once someone saves a report for the team, the newest one opens here.</p>
+      <button type="button" class="ito-btn is-primary" data-goto="support-upload">Upload a file</button>
+    </article>
+
+    <div class="ito-upresult" data-gx-when="report" hidden>
+      <div class="ito-uphead">
+        <div>
+          <h2>Report: <span data-draw="gx-name">—</span></h2>
+          <p data-draw="gx-meta">—</p>
+          <p data-gx-when="saved" hidden>Saved by the team: the summary tables are kept, not the rows, so the preview and the group-by table need the original file.</p>
+        </div>
+        <button type="button" class="ito-btn is-quiet gx-clear">Close report</button>
+      </div>
+      <p class="gx-hint" data-gx-hint="dispatch" hidden>This looks like a dispatch sheet. The Dispatch department reads it in full: couriers, delivery time and the follow-up list. <button type="button" class="ito-btn gx-to-dispatch">Open it in Dispatch</button></p>
+      <p class="gx-hint" data-gx-hint="orders" hidden>This looks like an ITO order export. Orders &amp; payments gives the full order report for it. <button type="button" class="ito-btn" data-goto="reports">Go to the order upload</button></p>
+      <div class="ito-actions">
+        <button type="button" class="ito-btn is-primary gx-dl-xlsx">Download report (Excel)</button>
+        <button type="button" class="ito-btn gx-dl-cols">Column summary (CSV)</button>
+        <button type="button" class="ito-btn gx-save" data-gx-needs="save" hidden>Save for the team</button>
+        <span class="ito-msg" data-gx-save="saving" hidden>Saving…</span>
+        <span class="ito-msg ok" data-gx-save="saved" hidden>Saved. The team sees it on this page and under Saved reports.</span>
+        <span class="ito-msg bad" data-gx-save="failed" hidden>Couldn't save. Saving needs edit access to this dashboard.</span>
+        <span class="ito-msg" data-gx-needs="noedit" hidden>Ask an editor of this dashboard to save it for the team.</span>
+      </div>
+
+      <section class="ito-kpis" aria-label="Headline figures for the file">
+        <div class="ito-kpi"><h3>Requests</h3><div class="ito-kv" data-draw="gx-kpi" data-field="rows" data-fmt="int">—</div><div class="ito-sub">Rows with any value</div></div>
+        <div class="ito-kpi" data-gx-needs="date" hidden><h3>Period covered</h3><div class="ito-kv gx-period" data-draw="gx-kpi" data-field="period">—</div><div class="ito-sub">By <span data-draw="gx-col" data-field="dateCol">—</span></div></div>
+        <div class="ito-kpi" data-gx-needs="status" hidden><h3>Resolved</h3><div class="ito-kv" data-draw="gx-kpi" data-field="done" data-fmt="int">—</div><div class="ito-sub"><span data-draw="gx-kpi" data-field="doneRate" data-fmt="pct">—</span> of entries with a status</div></div>
+        <div class="ito-kpi is-bad" data-gx-needs="status" hidden><h3>Still open</h3><div class="ito-kv" data-draw="gx-kpi" data-field="open" data-fmt="int">—</div><div class="ito-sub">From <span data-draw="gx-col" data-field="statusCol">—</span></div></div>
+        <div class="ito-kpi" data-gx-needs="duration" hidden><h3>Average time to close</h3><div class="ito-kv" data-draw="gx-kpi" data-field="avgClose" data-fmt="days">—</div><div class="ito-sub">Median <span data-draw="gx-kpi" data-field="medianClose" data-fmt="days">—</span>, to <span data-draw="gx-col" data-field="endCol">—</span></div></div>
+        <div class="ito-kpi"><h3>Columns</h3><div class="ito-kv" data-draw="gx-kpi" data-field="columns" data-fmt="int">—</div><div class="ito-sub">Read from the sheet</div></div>
+      </section>
+
+      <section class="ito-grid">
+        <article class="ito-card" data-gx-needs="date" hidden>
+          <h2>Requests by month</h2>
+          <p class="note">Counted by <b data-draw="gx-col" data-field="dateCol">—</b>.<span data-gx-needs="status" hidden> Blue is the part completed.</span></p>
+          <div class="ito-chart" data-draw="gx-month"></div>
+        </article>
+        <article class="ito-card" data-gx-needs="status" hidden>
+          <h2>By status</h2>
+          <p class="note">Share of all entries for each value of <b data-draw="gx-col" data-field="statusCol">—</b>. Green values count as completed.</p>
+          <div class="ito-carts" data-draw="gx-status"></div>
+        </article>
+      </section>
+
+      <article class="ito-card is-wide" data-gx-needs="cats" hidden>
+        <h2>Top values</h2>
+        <p class="note">The most common values in each column that groups the entries (up to 10 each). Columns with names, emails or phone numbers are left out.</p>
+        <div class="gx-cats" data-draw="gx-cats"></div>
+      </article>
+
+      <section class="ito-grid">
+        <article class="ito-card" data-gx-needs="rows" hidden>
+          <h2>Group and count</h2>
+          <p class="note">Pick a column to count rows by, and optionally a number column to add up.</p>
+          <div class="ito-gen-pick">
+            <label>Group by <select data-draw="gx-by" aria-label="Group by"></select></label>
+            <label>Add up <select data-draw="gx-sum" aria-label="Add up"></select></label>
+            <button type="button" class="ito-btn gx-dl-group">Download this table (CSV)</button>
+          </div>
+          <div class="ito-tablebox" data-gx-needs="group" hidden><table class="ito-table" data-draw="gx-group"></table></div>
+        </article>
+        <article class="ito-card" data-gx-needs="saved group" hidden>
+          <h2>Grouped by <span data-draw="gx-col" data-field="by">—</span></h2>
+          <p class="note">As saved with the report.</p>
+          <div class="ito-tablebox"><table class="ito-table" data-draw="gx-group"></table></div>
+        </article>
+        <article class="ito-card" data-gx-needs="nums" hidden>
+          <h2>Number columns</h2>
+          <p class="note">Totals and ranges for columns that hold numbers (IDs, codes and serial numbers are left out).</p>
+          <div class="ito-wide">
+            <table class="ito-table">
+              <thead><tr><th>Column</th><th>Filled</th><th>Total</th><th>Average</th><th>Lowest</th><th>Highest</th></tr></thead>
+              <tbody data-draw="gx-nums"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <article class="ito-card is-wide">
+        <h2>Columns</h2>
+        <p class="note">What each column holds. Totals and ranges are shown for number columns.</p>
+        <div class="ito-wide">
+          <table class="ito-table">
+            <thead><tr><th>Column</th><th>Type</th><th>Filled</th><th>Empty</th><th>Distinct values</th><th>Total</th><th>Lowest</th><th>Highest</th></tr></thead>
+            <tbody data-draw="gx-cols"></tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="ito-card is-wide" data-gx-needs="rows" hidden>
+        <h2>First 50 rows</h2>
+        <p class="note">A preview of the file as it was read. It stays in your browser.</p>
+        <div class="ito-wide"><table class="ito-table" data-draw="gx-preview"></table></div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ================= SUPPORT: UPLOAD ================= -->
+  <section class="ito-panel" id="support-upload" data-panel="support-upload" data-dept="support" data-dscope="support" role="tabpanel" aria-labelledby="tab-support-upload" hidden>
+    <section class="ito-grid">
+      <article class="ito-card ito-up-gx">
+        <h2>Upload a support file</h2>
+        <p>The support tracker or a ticket export, as Excel or CSV. The report appears on the Report tab.</p>
+        <label class="ito-drop gx-drop">
+          <input type="file" class="gx-file" accept=".csv,.tsv,.txt,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" multiple>
+          <span class="ito-drop-title">Choose files or drop them here</span>
+          <span class="ito-sub">.xlsx or CSV · several files with the same columns are combined</span>
+        </label>
+        <div class="ito-opts">
+          <label data-gx-sheets hidden>Sheet <select data-draw="gx-sheet" aria-label="Sheet"></select></label>
+        </div>
+        <p class="ito-msg" data-gx-msg="reading" hidden>Reading your file…</p>
+        <p class="ito-msg bad" data-gx-msg="error" hidden><span data-draw="gx-error">—</span></p>
+        <p class="ito-msg bad" data-gx-msg="xls" hidden>Old .xls files can't be read here. Open it in Excel, save it as .xlsx or CSV, and upload it again.</p>
+        <p class="ito-msg">The file is read in your own browser and isn't uploaded anywhere. Only a summary is kept, and only if you choose "Save for the team".</p>
+      </article>
+      <article class="ito-card">
+        <h2>How the report is built</h2>
+        <ul class="ito-steps">
+          <li>The header row is found even under a title row. Every other non-empty row is an entry.</li>
+          <li>A <b>date</b> column (created, raised or request date) gives the monthly chart; a second date (resolved or closed date) gives the time to close.</li>
+          <li>A <b>status</b> column gives completed and open counts. Values like Done, Closed, Resolved, Completed and Delivered count as completed.</li>
+          <li>Short text columns (issue type, priority, school, owner, channel) become top-value charts. Number columns are totalled.</li>
+          <li>Names, emails and phone numbers are never charted or saved.</li>
+        </ul>
+      </article>
+    </section>
+    <article class="ito-card ito-saved">
+      <h2>Saved support reports</h2>
+      <p>Reports the team saved: summary tables only, with no rows, names, emails or phone numbers. The newest opens on the Report tab for everyone.</p>
+      <p class="ito-msg" data-gx-saved-state="loading">Loading saved reports…</p>
+      <p class="ito-msg" data-gx-saved-state="empty" hidden>No saved reports yet. Upload a file above, then choose "Save for the team" on the Report tab.</p>
+      <p class="ito-msg" data-gx-saved-state="off" hidden>Saved reports aren't available in this view.</p>
+      <ul data-draw="gx-saved"></ul>
+    </article>
+  </section>
 </div>
 
 <script>
@@ -874,6 +1511,138 @@
       return out;
     },
   });
+
+  // ---------- Dispatch department ----------
+  // Each function works from the dispatch rows alone, so a dispatch sheet uploaded on the page runs through the same code (window.dspCalcs).
+  const DSP_CALCS = {
+    dsp_rows: (dispatch) => {
+      const asOf = dispatch.reduce((m, r) => [r.order_date, r.dispatch_date, r.delivery_date].reduce((x, d) => (d && d > x ? d : x), m), '');
+      const gap = (a, b) => (a && b ? Math.round((Date.parse(b) - Date.parse(a)) / 864e5) : null);
+      const n = (v) => Number(v) || 0;
+      return dispatch.map((r) => {
+        const shipped = r.stage === 'Delivered' || r.stage === 'In transit';
+        let dd = r.stage === 'Delivered' ? gap(r.dispatch_date, r.delivery_date) : null;
+        if (r.stage === 'Delivered' && dd === null && r.days !== null && r.days !== '' && r.days !== undefined) dd = Math.round(Number(r.days));
+        if (dd !== null && !(dd >= 0)) dd = null;
+        const lag = shipped ? gap(r.order_date, r.dispatch_date) : null;
+        return {
+          ...r, ito_workbooks: n(r.ito_workbooks), pyqps: n(r.pyqps), guides: n(r.guides), lc_workbooks: n(r.lc_workbooks), textbooks: n(r.textbooks), units: n(r.units),
+          delivery_days: dd, lag: lag !== null && lag >= 0 ? lag : null, as_of: asOf,
+          days_open: r.stage === 'Delivered' ? null : r.stage === 'In transit' ? gap(r.dispatch_date, asOf) : gap(r.order_date || r.dispatch_date, asOf),
+        };
+      });
+    },
+    dsp_cube: (dsp_rows) => {
+      const months = [...new Set(dsp_rows.map((r) => r.month))].sort();
+      const couriers = [...new Set(dsp_rows.map((r) => r.courier).filter(Boolean))].sort();
+      const mean = (a) => (a.length ? a.reduce((x, y) => x + y, 0) / a.length : null);
+      const median = (a) => { if (!a.length) return null; const s = [...a].sort((x, y) => x - y); const m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
+      const sum = (rows, f) => rows.reduce((a, r) => a + (Number(r[f]) || 0), 0);
+      const asOf = dsp_rows.length ? dsp_rows[0].as_of : '';
+      const out = [];
+      for (const e of ['all', 'ITO', 'LC']) for (const c of ['all', ...couriers]) for (const m of ['all', ...months]) {
+        const rows = dsp_rows.filter((r) => (e === 'all' || r.exam === e) && (c === 'all' || r.courier === c) && (m === 'all' || r.month === m));
+        const del = rows.filter((r) => r.stage === 'Delivered');
+        const transit = rows.filter((r) => r.stage === 'In transit');
+        const shipped = del.length + transit.length;
+        const late = transit.filter((r) => r.days_open > 7).length;
+        const onHold = rows.filter((r) => r.stage === 'On hold').length;
+        const notShipped = rows.filter((r) => r.stage === 'Not shipped yet').length;
+        const dd = del.map((r) => r.delivery_days).filter((v) => v !== null);
+        out.push({
+          k: e + '|' + c + '|' + m, exam: e, courier: c, month: m, orders: rows.length, schools: new Set(rows.map((r) => r.school)).size,
+          shipped, shipped_share: rows.length ? shipped / rows.length : null, delivered: del.length, delivery_rate: shipped ? del.length / shipped : null,
+          in_transit: transit.length, transit_7: transit.length - late, transit_late: late, on_hold: onHold, not_shipped: notShipped, pending_ship: onHold + notShipped,
+          avg_days: mean(dd), median_days: median(dd), within_7: dd.length ? dd.filter((v) => v <= 7).length / dd.length : null,
+          avg_lag: mean(rows.map((r) => r.lag).filter((v) => v !== null)), issues: rows.filter((r) => r.issue).length,
+          ito_workbooks: sum(rows, 'ito_workbooks'), pyqps: sum(rows, 'pyqps'), guides: sum(rows, 'guides'), lc_workbooks: sum(rows, 'lc_workbooks'), textbooks: sum(rows, 'textbooks'), units: sum(rows, 'units'),
+          as_of: asOf,
+        });
+      }
+      return out;
+    },
+    dsp_daily: (dsp_rows) => {
+      const dates = dsp_rows.flatMap((r) => [r.dispatch_date, r.delivery_date]).filter(Boolean).sort();
+      const days = [];
+      if (dates.length) for (let d = new Date(dates[0] + 'T00:00:00Z'); d <= new Date(dates[dates.length - 1] + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + 1)) days.push(d.toISOString().slice(0, 10));
+      const couriers = [...new Set(dsp_rows.map((r) => r.courier).filter(Boolean))].sort();
+      const out = [];
+      for (const e of ['all', 'ITO', 'LC']) for (const c of ['all', ...couriers]) {
+        const sel = dsp_rows.filter((r) => (r.stage === 'Delivered' || r.stage === 'In transit') && (e === 'all' || r.exam === e) && (c === 'all' || r.courier === c));
+        if (!sel.length) continue;
+        const ship = new Map(), dl = new Map();
+        sel.forEach((r) => {
+          if (r.dispatch_date) ship.set(r.dispatch_date, (ship.get(r.dispatch_date) || 0) + 1);
+          if (r.stage === 'Delivered' && r.delivery_date) dl.set(r.delivery_date, (dl.get(r.delivery_date) || 0) + 1);
+        });
+        days.forEach((day, i) => {
+          const win = days.slice(Math.max(0, i - 6), i + 1);
+          out.push({ k: e + '|' + c + '|' + day, exam: e, courier: c, date: day, month: day.slice(0, 7), shipped: ship.get(day) || 0, delivered: dl.get(day) || 0, delivered_7d: win.reduce((a, d) => a + (dl.get(d) || 0), 0) / win.length });
+        });
+      }
+      return out;
+    },
+    dsp_days: (dsp_rows) => {
+      const buckets = [['0–2 days', 0, 2], ['3–4 days', 3, 4], ['5–7 days', 5, 7], ['8–14 days', 8, 14], ['15+ days', 15, 1e9]];
+      const months = [...new Set(dsp_rows.map((r) => r.month))].sort();
+      const couriers = [...new Set(dsp_rows.map((r) => r.courier).filter(Boolean))].sort();
+      const out = [];
+      for (const e of ['all', 'ITO', 'LC']) for (const c of ['all', ...couriers]) for (const m of ['all', ...months]) {
+        const dd = dsp_rows.filter((r) => r.delivery_days !== null && (e === 'all' || r.exam === e) && (c === 'all' || r.courier === c) && (m === 'all' || r.month === m)).map((r) => r.delivery_days);
+        buckets.forEach(([bucket, lo, hi], i) => {
+          const n = dd.filter((v) => v >= lo && v <= hi).length;
+          out.push({ k: e + '|' + c + '|' + m + '|' + i, exam: e, courier: c, month: m, bucket, order: i, delivered: n, share: dd.length ? n / dd.length : null });
+        });
+      }
+      return out;
+    },
+    dsp_regions: (dsp_rows) => {
+      const months = [...new Set(dsp_rows.map((r) => r.month))].sort();
+      const couriers = [...new Set(dsp_rows.map((r) => r.courier).filter(Boolean))].sort();
+      const out = [];
+      for (const e of ['all', 'ITO', 'LC']) for (const c of ['all', ...couriers]) for (const m of ['all', ...months]) {
+        const by = new Map();
+        dsp_rows.forEach((r) => {
+          if (!((e === 'all' || r.exam === e) && (c === 'all' || r.courier === c) && (m === 'all' || r.month === m))) return;
+          const g = by.get(r.region) || { orders: 0, shipped: 0, delivered: 0, in_transit: 0, transit_late: 0, pending_ship: 0, units: 0, days: [] };
+          g.orders++; g.units += Number(r.units) || 0;
+          if (r.stage === 'Delivered') { g.shipped++; g.delivered++; if (r.delivery_days !== null) g.days.push(r.delivery_days); }
+          else if (r.stage === 'In transit') { g.shipped++; g.in_transit++; if (r.days_open > 7) g.transit_late++; }
+          else g.pending_ship++;
+          by.set(r.region, g);
+        });
+        by.forEach((g, region) => out.push({
+          k: e + '|' + c + '|' + m + '|' + region, exam: e, courier: c, month: m, region, orders: g.orders, shipped: g.shipped, delivered: g.delivered,
+          delivery_rate: g.shipped ? g.delivered / g.shipped : null, in_transit: g.in_transit, transit_late: g.transit_late, pending_ship: g.pending_ship, units: g.units,
+          avg_days: g.days.length ? g.days.reduce((a, b) => a + b, 0) / g.days.length : null,
+        }));
+      }
+      return out;
+    },
+    dsp_open: (dsp_rows) => dsp_rows.filter((r) => r.stage !== 'Delivered' || r.issue).map((r) => ({
+      k: r.sno, sno: r.sno, school: r.school, region: r.region, exam: r.exam, courier: r.courier, pod: r.pod, order_date: r.order_date, dispatch_date: r.dispatch_date,
+      delivery_date: r.delivery_date, month: r.month, stage: r.stage, days_open: r.days_open, issue: r.issue, remark: r.remark, units: r.units,
+    })),
+    dsp_material: (dispatch_material) => dispatch_material.map((r) => {
+      const count = Number(r.count) || 0, packed = Number(r.packed) || 0;
+      return { k: r.k, exam: r.exam, item: r.item, count, packed, dispatch_today: Number(r.dispatch_today) || 0, pending: Number(r.pending) || 0, packed_share: count ? packed / count : null };
+    }),
+  };
+  dash.calc('dsp_rows', { title: 'Dispatch rows with days', description: 'Each school order with its delivery time (dispatch to delivery), days open (to the latest date in the sheet) and days from order to dispatch.', inputs: ['dispatch'], fn: DSP_CALCS.dsp_rows });
+  dash.calc('dsp_cube', { title: 'Dispatch by programme, courier and month', description: 'Orders, shipped, delivered, in transit (and over 7 days), on hold, delivery time and copies sent, for every programme, courier and order month, plus "all".', inputs: ['dsp_rows'], fn: DSP_CALCS.dsp_cube });
+  dash.calc('dsp_daily', { title: 'Shipments per day', description: 'Orders shipped per dispatch date and delivered per delivery date, with the 7-day average of deliveries, per programme and courier.', inputs: ['dsp_rows'], fn: DSP_CALCS.dsp_daily });
+  dash.calc('dsp_days', { title: 'Delivery time bands', description: 'Delivered orders by days from dispatch to delivery (0–2, 3–4, 5–7, 8–14, 15+), per programme, courier and month.', inputs: ['dsp_rows'], fn: DSP_CALCS.dsp_days });
+  dash.calc('dsp_regions', { title: 'Dispatch by region', description: 'Orders, shipped, delivered, in transit, not shipped, copies and delivery time per region (from the school code), per programme, courier and month.', inputs: ['dsp_rows'], fn: DSP_CALCS.dsp_regions });
+  dash.calc('dsp_open', { title: 'Shipments to follow up', description: 'Every order not delivered yet, plus returns (RTO), re-routed and lost shipments, with days open.', inputs: ['dsp_rows'], fn: DSP_CALCS.dsp_open });
+  dash.calc('dsp_material', { title: 'Study material packed share', description: 'The Total Order Summary rows with packed ÷ ordered.', inputs: ['dispatch_material'], fn: DSP_CALCS.dsp_material });
+  if (typeof window !== 'undefined') {
+    window.dspCalcs = {
+      run: (dispatch, material) => {
+        const rows = DSP_CALCS.dsp_rows(dispatch);
+        return { dsp_cube: DSP_CALCS.dsp_cube(rows), dsp_daily: DSP_CALCS.dsp_daily(rows), dsp_days: DSP_CALCS.dsp_days(rows), dsp_regions: DSP_CALCS.dsp_regions(rows), dsp_open: DSP_CALCS.dsp_open(rows), dsp_material: DSP_CALCS.dsp_material(material || []) };
+      },
+    };
+  }
 </script>
 
 <script>
@@ -939,11 +1708,12 @@
   document.querySelectorAll('.ito-subject').forEach((sel) => sel.addEventListener('change', () => dash.setParams({ subject: sel.value })));
   document.querySelectorAll('[data-tier-pick]').forEach((b) => b.addEventListener('click', () => dash.setParams({ tier: b.dataset.tierPick })));
   document.querySelectorAll('[data-metric]').forEach((b) => b.addEventListener('click', () => dash.setParams({ metric: b.dataset.metric })));
-  document.querySelectorAll('.ito-reset').forEach((b) => b.addEventListener('click', () => { dash.resetParams(); setDefaults(); }));
+  document.querySelectorAll('.ito-reset:not(.dsp-reset):not(.dsp-back)').forEach((b) => b.addEventListener('click', () => { dash.resetParams(); setDefaults(); }));
 
-  // The filters only apply to the dashboard tabs.
+  // The filters only apply to the Orders & payments dashboard tabs.
   const syncFilters = (name) => {
-    document.querySelectorAll('.ito-filters').forEach((f) => { f.hidden = name === 'reports' || name === 'about'; });
+    const isPanel = [...document.querySelectorAll('[data-panel]')].some((el) => el.dataset.panel === name);
+    document.querySelectorAll('.ito-filters:not(.dsp-filters)').forEach((f) => { f.hidden = isPanel && !['overview', 'trends', 'conversion', 'products'].includes(name); });
   };
   document.querySelectorAll('[data-tab]').forEach((t) => t.addEventListener('click', () => syncFilters(t.dataset.tab)));
   syncFilters(location.hash.slice(1));
@@ -1388,3 +2158,4 @@
 </script>
 
 <script src="reports.js"></script>
+<script src="departments.js"></script>

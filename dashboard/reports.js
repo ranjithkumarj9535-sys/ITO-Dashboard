@@ -151,7 +151,11 @@
 
   const toTable = (aoa) => {
     const filled = (r) => (r || []).filter((c) => c !== undefined && c !== null && String(c).trim() !== '').length;
-    let h = aoa.findIndex((r) => filled(r) >= 2);
+    // The header is the row near the top with the most text labels: a title row or group headings above it have fewer.
+    const isLabel = (v) => typeof v === 'string' && v.trim() !== '' && asNumber(v) === null && !/^\d{4}-\d{2}-\d{2}/.test(v.trim());
+    let h = -1, best = 0;
+    aoa.slice(0, 25).forEach((r, i) => { const n = (r || []).filter(isLabel).length; if (n > best && filled(r) >= 2) { best = n; h = i; } });
+    if (h < 0) h = aoa.findIndex((r) => filled(r) >= 2);
     if (h < 0) h = aoa.findIndex((r) => filled(r) >= 1);
     if (h < 0) return { columns: [], rows: [] };
     const width = Math.max(...aoa.slice(h).map((r) => (r || []).length));
@@ -455,7 +459,7 @@
   });
   const withMonthLabel = (rows) => rows.map((r) => ({ ...r, month_label: monthLabel(r.month) }));
 
-  root.itoReports = { parseCSV, readXlsx, readZip, toTable, readFile, isIto, cleanIto, itoReport, followUp, profile, groupBy, toCSV, toXlsx, COLS, monthLabel, summaryRows, summarySheet, withMonthLabel, isTestRow };
+  root.itoReports = { parseCSV, readXlsx, readZip, toTable, readFile, isIto, cleanIto, itoReport, followUp, profile, groupBy, toCSV, toXlsx, COLS, monthLabel, summaryRows, summarySheet, withMonthLabel, isTestRow, asNumber, toISODate };
   if (typeof document === 'undefined' || typeof dash === 'undefined') return;
 
   // ---------- the page ----------
@@ -744,7 +748,7 @@
   // ---------- controls ----------
 
   all('.ito-file').forEach((input) => input.addEventListener('change', () => { handleFiles(input.files); input.value = ''; }));
-  all('.ito-drop').forEach((zone) => {
+  all('.ito-up .ito-drop').forEach((zone) => {
     zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('is-over'); });
     zone.addEventListener('dragleave', () => zone.classList.remove('is-over'));
     zone.addEventListener('drop', (e) => { e.preventDefault(); zone.classList.remove('is-over'); if (e.dataTransfer) handleFiles(e.dataTransfer.files); });
@@ -800,14 +804,19 @@
   });
 
   // tabs
+  // Each tab belongs to a department; showing a tab shows that department's tabs and header.
   const showTab = (name) => {
+    const panel = [...all('[data-panel]')].find((p) => p.dataset.panel === name);
+    const dept = (panel && panel.dataset.dept) || 'orders';
     all('[data-panel]').forEach((p) => { p.hidden = p.dataset.panel !== name; });
-    all('[data-tab]').forEach((t) => { t.setAttribute('aria-selected', String(t.dataset.tab === name)); t.tabIndex = t.dataset.tab === name ? 0 : -1; });
+    all('[data-tab]').forEach((t) => { t.setAttribute('aria-selected', String(t.dataset.tab === name)); t.tabIndex = t.dataset.tab === name ? 0 : -1; t.hidden = (t.dataset.dept || 'orders') !== dept; });
+    all('[data-dept-only]').forEach((el) => { el.hidden = el.dataset.deptOnly !== dept; });
+    all('[data-dept-pick]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.deptPick === dept)));
   };
   all('[data-tab]').forEach((t) => t.addEventListener('click', () => { showTab(t.dataset.tab); dash.setLink(t.dataset.tab); }));
   all('[role="tablist"]').forEach((list) => list.addEventListener('keydown', (e) => {
     if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
-    const tabs = [...list.querySelectorAll('[data-tab]')];
+    const tabs = [...list.querySelectorAll('[data-tab]')].filter((t) => !t.hidden);
     const i = tabs.indexOf(document.activeElement);
     if (i < 0) return;
     const next = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];

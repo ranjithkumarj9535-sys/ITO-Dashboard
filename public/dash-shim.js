@@ -2,7 +2,7 @@
 // Supports what the page uses: calc, data, draw, onData, params, setParams, resetParams, setLink, colors.
 // Data comes precomputed (scripts/precompute.js runs the page's calcs), so calcs are only registered here.
 (function () {
-  const DEFAULT_PARAMS = { month: 'all', subject: 'all', tier: 'all', metric: 'paid' };
+  const DEFAULT_PARAMS = { month: 'all', subject: 'all', tier: 'all', metric: 'paid', dmonth: 'all', courier: 'all', exam: 'all' };
   const results = {};
   const draws = new Map();
   const listeners = [];
@@ -52,7 +52,7 @@
       render();
       // Redraw when a tab panel or the filter bar is shown or hidden.
       const mo = new MutationObserver(schedule);
-      document.querySelectorAll('[data-panel], .ito-filters').forEach((el) => mo.observe(el, { attributes: true, attributeFilter: ['hidden'] }));
+      document.querySelectorAll('[data-panel], .ito-filters, [data-dept-only], [data-gx-when], [data-gx-needs]').forEach((el) => mo.observe(el, { attributes: true, attributeFilter: ['hidden'] }));
       try {
         const res = await fetch(url);
         if (!res.ok) throw new Error('HTTP ' + res.status);
