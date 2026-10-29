@@ -4,6 +4,7 @@ One dashboard with a department switcher: **Orders & payments**, **Dispatch**, *
 
 - **Dispatch** – built from the master dispatch workbook (`MAIN_Master_Data_Dispatch_Study_Material_2026-27_CORRECTED.xlsx`): overview and pipeline, courier scorecard and delivery time, regions and study material (packed vs pending), and a follow-up list of everything not delivered plus returns (RTO) and re-routes. Uploading a newer dispatch workbook or CSV on its Upload tab switches every Dispatch tab to that file. Totals are checked against the workbook's own "Summary Dispatch" sheet.
 - **MIS** and **Support Team for Schools** – upload any Excel/CSV sheet and the page finds the header row, date, status, category and number columns, and builds the report (entries by month, completed vs open, time to close, top values, number totals, column profile, Excel download). Editors can save a report for the team; the newest saved one opens for everyone. Names, emails and phone numbers are never charted or saved.
+- **Date filters** in every department: from/to dates and quick ranges (last 7 days, last 30 days, latest month). Orders compares the range with the period before; Dispatch can filter by order, dispatch or delivery date; MIS and Support re-analyse only the entries in range. Each department also has a **What stands out** card of findings worked out from the numbers in view.
 - Saved department reports live in the dashboard's `dept_reports` collection (summaries only).
 
 
@@ -36,7 +37,7 @@ npm run all      # Excel report + dashboard data + static site
 
 `dashboard/page.html`, `dashboard/reports.js` and `dashboard/departments.js` are the same files used on the claude.ai dashboard; `dashboard/dash-shim.js` provides the small runtime they need as a static site.
 
-Deploy: copy `public/index.html`, `public/dash-shim.js`, `public/reports.js`, `public/departments.js` and `public/data/summary.json` into a folder named `ito-dashboard` and run `vercel deploy --prod --scope ito-ca88` there.
+Deploy: copy `public/index.html`, `public/dash-shim.js`, `public/reports.js`, `public/departments.js` and `public/data/` (`summary.json`, plus `orders.json`, `dispatch.json` and `dispatch_material.json`, which the date filters load on demand) into a folder named `ito-dashboard` and run `vercel deploy --prod --scope ito-ca88` there.
 
 ## Definitions
 

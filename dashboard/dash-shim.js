@@ -2,7 +2,10 @@
 // Supports what the page uses: calc, data, draw, onData, params, setParams, resetParams, setLink, colors.
 // Data comes precomputed (scripts/precompute.js runs the page's calcs), so calcs are only registered here.
 (function () {
-  const DEFAULT_PARAMS = { month: 'all', subject: 'all', tier: 'all', metric: 'paid', dmonth: 'all', courier: 'all', exam: 'all' };
+  const DEFAULT_PARAMS = { month: 'all', subject: 'all', tier: 'all', metric: 'paid', dmonth: 'all', courier: 'all', exam: 'all', from: null, to: null, dfrom: null, dto: null, dbasis: 'order' };
+  // Row-level datasets, fetched only when a date range needs them (data/<id>.json).
+  const LAZY = new Set(['orders', 'dispatch', 'dispatch_material']);
+  const lazy = {};
   const results = {};
   const draws = new Map();
   const listeners = [];
@@ -36,6 +39,15 @@
     data(id) {
       if (status !== 'ok') return { status, data: [], message, refreshing: false, meta: [] };
       const data = results[id];
+      if (!data && LAZY.has(id)) {
+        if (!lazy[id]) {
+          lazy[id] = 'loading';
+          fetch('data/' + id + '.json').then((r) => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+            .then((rows) => { results[id] = rows; lazy[id] = 'ok'; schedule(); })
+            .catch((e) => { console.error('Could not load ' + id, e); lazy[id] = 'error'; schedule(); });
+        }
+        return { status: lazy[id] === 'error' ? 'error' : 'loading', data: [], message: '', refreshing: false, meta: [] };
+      }
       return data ? { status: 'ok', data, columns: data.length ? Object.keys(data[0]) : [], refreshing: false, meta: [] } : { status: 'missing', data: [], meta: [] };
     },
     onData(fn) { listeners.push(fn); try { fn(); } catch (e) { console.error(e); } },

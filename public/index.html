@@ -228,6 +228,22 @@
   .dsp-stats dt { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
   .dsp-stats dd { margin: 0; font-family: var(--font-anthropic-serif); font-size: calc(var(--cds-font-size-heading) * 1.3); font-variant-numeric: tabular-nums; }
 
+  /* Dates and insights (every department) */
+  .ito-dates { display: flex; align-items: center; gap: var(--cds-gap-xs); color: var(--color-fg-muted); }
+  .ito-date { font: inherit; font-size: var(--cds-font-size-caption); color: var(--color-fg); background: var(--color-bg); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: calc(var(--cds-pad-xs) + 1px) var(--cds-pad-xs); min-width: 0; color-scheme: light dark; }
+  .ito-date:focus-visible, .dsp-basis:focus-visible { outline: 2px solid var(--ito-accent); outline-offset: 1px; }
+  .ito-date.is-set { border-color: var(--ito-accent); background: var(--ito-tint); }
+  .dsp-filters select { font: inherit; font-size: var(--cds-font-size-body); color: var(--color-fg); background: var(--color-bg); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-xs) var(--cds-pad-sm); }
+  .gx-filters { position: static; box-shadow: none; }
+  .gx-filters[hidden] { display: none; }
+  .ito-insight-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); gap: var(--cds-gap-sm) var(--cds-gap-lg); }
+  .ito-insight-list li { display: grid; grid-template-columns: auto 1fr; gap: var(--cds-gap-sm); align-items: start; padding: var(--cds-pad-sm) var(--cds-pad-md); border-radius: var(--cds-radius); background: var(--color-bg); line-height: 1.4; }
+  .ito-insight-list li::before { content: ""; width: .55rem; height: .55rem; margin-top: .45rem; border-radius: 999px; background: var(--ito-accent); }
+  .ito-insight-list li.is-good::before { background: var(--color-ok); }
+  .ito-insight-list li.is-bad::before { background: var(--color-bad); }
+  .ito-insight-list li.is-warn::before { background: var(--color-warn); }
+  .ito .ito-insight-list li b { font-weight: 600; }
+
   /* MIS and Support: any uploaded sheet */
   .gx-empty { display: grid; justify-items: center; gap: var(--cds-gap-sm); text-align: center; padding: var(--cds-pad-xl) var(--cds-pad-lg); }
   .gx-empty svg { width: 2.75rem; height: 2.75rem; fill: none; stroke: var(--ito-accent); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
@@ -311,6 +327,12 @@
     .ito-dept-list { width: 100%; }
     .ito-dept { padding: var(--cds-pad-sm); gap: .35rem; }
     .dsp-open-seg { display: grid; grid-template-columns: 1fr 1fr; }
+    .ito-filters .ito-field-dates, .ito-filters .ito-field-presets { grid-column: 1 / -1; }
+    .ito-dates { display: grid; grid-template-columns: 1fr auto 1fr; }
+    .ito-filters .ito-presets { display: grid; grid-template-columns: 1fr 1fr; }
+    .ito-presets button { border-bottom: 1px solid var(--color-border-line); }
+    .ito-presets button:nth-child(2n) { border-right: 0; }
+    .ito-presets button:nth-last-child(-n+2) { border-bottom: 0; }
   }
 </style>
 
@@ -402,6 +424,28 @@
     <label class="ito-field">Order month
       <select data-draw="dsp-month-select" data-source="dsp_cube" aria-label="Order month"></select>
     </label>
+    <label class="ito-field">Dates by
+      <select class="dsp-basis" aria-label="Filter dates by">
+        <option value="order">Order date</option>
+        <option value="dispatch">Dispatch date</option>
+        <option value="delivery">Delivery date</option>
+      </select>
+    </label>
+    <div class="ito-field ito-field-dates">Dates
+      <div class="ito-dates">
+        <input type="date" class="ito-date" data-draw="date-input" data-range="dispatch" data-end="from" min="2000-01-01" max="2099-12-31" aria-label="From date">
+        <span aria-hidden="true">–</span>
+        <input type="date" class="ito-date" data-draw="date-input" data-range="dispatch" data-end="to" min="2000-01-01" max="2099-12-31" aria-label="To date">
+      </div>
+    </div>
+    <div class="ito-field ito-field-presets" data-range="dispatch">Quick range
+        <div class="ito-seg ito-presets" role="group" aria-label="Quick date range">
+          <button type="button" data-preset="7" aria-pressed="false">Last 7 days</button>
+          <button type="button" data-preset="30" aria-pressed="false">Last 30 days</button>
+          <button type="button" data-preset="month" aria-pressed="false">Latest month</button>
+          <button type="button" data-preset="all" aria-pressed="true">All dates</button>
+        </div>
+    </div>
     <label class="ito-field">Courier
       <select data-draw="dsp-courier-select" data-source="dsp_cube" aria-label="Courier"></select>
     </label>
@@ -414,6 +458,7 @@
     </div>
     <button type="button" class="ito-reset dsp-reset">Reset filters</button>
     <span class="ito-scope" data-draw="dsp-scope">—</span>
+    <p class="dsp-banner" data-dsp-needs="norange" hidden>Dates can't filter a saved report: it keeps summaries, not rows. Upload the file again to filter it by date.</p>
     <p class="dsp-banner" data-dsp-needs="override" hidden>Showing your uploaded file <b data-draw="dsp-source-name">—</b>, not the dashboard's own dispatch sheet. <button type="button" class="ito-reset dsp-back">Back to the dashboard's data</button></p>
   </section>
 
@@ -421,6 +466,21 @@
     <label class="ito-field">Month
       <select class="ito-month" data-draw="month-select" data-source="cube" aria-label="Month"></select>
     </label>
+    <div class="ito-field ito-field-dates">Order dates
+      <div class="ito-dates">
+        <input type="date" class="ito-date" data-draw="date-input" data-range="orders" data-end="from" min="2000-01-01" max="2099-12-31" aria-label="From date">
+        <span aria-hidden="true">–</span>
+        <input type="date" class="ito-date" data-draw="date-input" data-range="orders" data-end="to" min="2000-01-01" max="2099-12-31" aria-label="To date">
+      </div>
+    </div>
+    <div class="ito-field ito-field-presets" data-range="orders">Quick range
+        <div class="ito-seg ito-presets" role="group" aria-label="Quick date range">
+          <button type="button" data-preset="7" aria-pressed="false">Last 7 days</button>
+          <button type="button" data-preset="30" aria-pressed="false">Last 30 days</button>
+          <button type="button" data-preset="month" aria-pressed="false">Latest month</button>
+          <button type="button" data-preset="all" aria-pressed="true">All dates</button>
+        </div>
+    </div>
     <label class="ito-field">Product (subject)
       <select class="ito-subject" aria-label="Product (subject)">
         <option value="all">All subjects</option>
@@ -465,13 +525,13 @@
       <div class="ito-kpi">
         <h3>Paid orders</h3>
         <div class="ito-kv" data-draw="kpi" data-source="cube" data-field="paid" data-fmt="int">—</div>
-        <div class="ito-sub"><span class="ito-delta" data-draw="delta" data-source="cube" data-field="paid_change" data-fmt="pct">—</span> vs previous month</div>
+        <div class="ito-sub"><span class="ito-delta" data-draw="delta" data-source="cube" data-field="paid_change" data-fmt="pct">—</span> <span data-period-label="month">vs previous month</span><span data-period-label="range" hidden>vs the period before</span></div>
         <div class="ito-spark" data-draw="spark" data-source="cube" data-field="paid"></div>
       </div>
       <div class="ito-kpi">
         <h3>Payment success</h3>
         <div class="ito-kv" data-draw="kpi" data-source="cube" data-field="success" data-fmt="pct">—</div>
-        <div class="ito-sub"><span class="ito-delta" data-draw="delta" data-source="cube" data-field="success_change" data-fmt="pp">—</span> vs previous month</div>
+        <div class="ito-sub"><span class="ito-delta" data-draw="delta" data-source="cube" data-field="success_change" data-fmt="pp">—</span> <span data-period-label="month">vs previous month</span><span data-period-label="range" hidden>vs the period before</span></div>
         <div class="ito-spark" data-draw="spark" data-source="cube" data-field="success"></div>
       </div>
       <div class="ito-kpi">
@@ -522,6 +582,12 @@
         <div class="ito-sub">The student made no paid order on or after that day</div>
       </div>
     </section>
+
+    <article class="ito-card is-wide ito-insights" id="insights">
+      <h2>What stands out</h2>
+      <p class="note">Found automatically for the filters and dates above, compared with the period before where there is one.</p>
+      <ul class="ito-insight-list" data-draw="ins-orders" data-source="cube daily plans weekday"></ul>
+    </article>
 
     <section class="ito-grid">
       <article class="ito-card" id="trend">
@@ -837,6 +903,12 @@
       </article>
     </section>
 
+    <article class="ito-card is-wide ito-insights" id="dsp-insights">
+      <h2>What stands out</h2>
+      <p class="note">Found automatically for the filters and dates above: where shipments are stuck, which courier and region are slowest, and what is still pending.</p>
+      <ul class="ito-insight-list" data-draw="ins-dispatch" data-source="dsp_cube dsp_regions dsp_open dsp_material"></ul>
+    </article>
+
     <article class="ito-card is-wide" id="dsp-courier-card">
       <h2>Delivery rate by courier</h2>
       <p class="note">Delivered ÷ shipped for each courier, with the shipments still in transit. Red is the lowest rate (couriers with 20+ shipments). Click a courier to filter the whole department.</p>
@@ -1029,6 +1101,31 @@
         <span class="ito-msg" data-gx-needs="noedit" hidden>Ask an editor of this dashboard to save it for the team.</span>
       </div>
 
+      <section class="ito-filters gx-filters" aria-label="Report dates" data-gx-needs="date local">
+        <div class="ito-field ito-field-dates">Dates (<span data-draw="gx-col" data-field="dateCol">—</span>)
+          <div class="ito-dates">
+            <input type="date" class="ito-date" data-draw="gx-date-input" data-end="from" min="2000-01-01" max="2099-12-31" aria-label="From date">
+            <span aria-hidden="true">–</span>
+            <input type="date" class="ito-date" data-draw="gx-date-input" data-end="to" min="2000-01-01" max="2099-12-31" aria-label="To date">
+          </div>
+        </div>
+        <div class="ito-field ito-field-presets">Quick range
+        <div class="ito-seg ito-presets gx-presets" role="group" aria-label="Quick date range">
+          <button type="button" data-preset="7" aria-pressed="false">Last 7 days</button>
+          <button type="button" data-preset="30" aria-pressed="false">Last 30 days</button>
+          <button type="button" data-preset="month" aria-pressed="false">Latest month</button>
+          <button type="button" data-preset="all" aria-pressed="true">All dates</button>
+        </div>
+        </div>
+        <span class="ito-scope" data-draw="gx-range-scope">—</span>
+      </section>
+
+      <article class="ito-card is-wide ito-insights">
+        <h2>What stands out</h2>
+        <p class="note">Found automatically in the entries for the dates picked, compared with the period before where there is one.</p>
+        <ul class="ito-insight-list" data-draw="ins-gx"></ul>
+      </article>
+
       <section class="ito-kpis" aria-label="Headline figures for the file">
         <div class="ito-kpi"><h3>Entries</h3><div class="ito-kv" data-draw="gx-kpi" data-field="rows" data-fmt="int">—</div><div class="ito-sub">Rows with any value</div></div>
         <div class="ito-kpi" data-gx-needs="date" hidden><h3>Period covered</h3><div class="ito-kv gx-period" data-draw="gx-kpi" data-field="period">—</div><div class="ito-sub">By <span data-draw="gx-col" data-field="dateCol">—</span></div></div>
@@ -1174,6 +1271,31 @@
         <span class="ito-msg" data-gx-needs="noedit" hidden>Ask an editor of this dashboard to save it for the team.</span>
       </div>
 
+      <section class="ito-filters gx-filters" aria-label="Report dates" data-gx-needs="date local">
+        <div class="ito-field ito-field-dates">Dates (<span data-draw="gx-col" data-field="dateCol">—</span>)
+          <div class="ito-dates">
+            <input type="date" class="ito-date" data-draw="gx-date-input" data-end="from" min="2000-01-01" max="2099-12-31" aria-label="From date">
+            <span aria-hidden="true">–</span>
+            <input type="date" class="ito-date" data-draw="gx-date-input" data-end="to" min="2000-01-01" max="2099-12-31" aria-label="To date">
+          </div>
+        </div>
+        <div class="ito-field ito-field-presets">Quick range
+        <div class="ito-seg ito-presets gx-presets" role="group" aria-label="Quick date range">
+          <button type="button" data-preset="7" aria-pressed="false">Last 7 days</button>
+          <button type="button" data-preset="30" aria-pressed="false">Last 30 days</button>
+          <button type="button" data-preset="month" aria-pressed="false">Latest month</button>
+          <button type="button" data-preset="all" aria-pressed="true">All dates</button>
+        </div>
+        </div>
+        <span class="ito-scope" data-draw="gx-range-scope">—</span>
+      </section>
+
+      <article class="ito-card is-wide ito-insights">
+        <h2>What stands out</h2>
+        <p class="note">Found automatically in the entries for the dates picked, compared with the period before where there is one.</p>
+        <ul class="ito-insight-list" data-draw="ins-gx"></ul>
+      </article>
+
       <section class="ito-kpis" aria-label="Headline figures for the file">
         <div class="ito-kpi"><h3>Requests</h3><div class="ito-kv" data-draw="gx-kpi" data-field="rows" data-fmt="int">—</div><div class="ito-sub">Rows with any value</div></div>
         <div class="ito-kpi" data-gx-needs="date" hidden><h3>Period covered</h3><div class="ito-kv gx-period" data-draw="gx-kpi" data-field="period">—</div><div class="ito-sub">By <span data-draw="gx-col" data-field="dateCol">—</span></div></div>
@@ -1291,7 +1413,12 @@
 </div>
 
 <script>
-  dash.calc('cube', {
+  // Every calc is also kept in window.calcDefs, so a date range can run the same code over the rows in that range.
+  const CALC_DEFS = {};
+  const calc = (id, def) => { CALC_DEFS[id] = def; dash.calc(id, def); };
+  if (typeof window !== 'undefined') window.calcDefs = CALC_DEFS;
+
+  calc('cube', {
     title: 'Orders by month, subject and tier',
     description: 'Order, payment, student and recovery counts for every month, subject and plan tier, plus "all" for each. Paid = status captured.',
     inputs: ['orders'],
@@ -1347,7 +1474,7 @@
     },
   });
 
-  dash.calc('plans', {
+  calc('plans', {
     title: 'Plans by month',
     description: 'For each plan: orders containing it, paid orders containing it, payment success, and its share of all paid plan units, per month and for all months.',
     inputs: ['orders'],
@@ -1371,7 +1498,7 @@
     },
   });
 
-  dash.calc('carttype', {
+  calc('carttype', {
     title: 'Payment success by cart type',
     description: 'Order attempts, paid orders and payment success for Flexi-only, Smart-only, Champion-only and mixed carts, per month and for all months.',
     inputs: ['orders'],
@@ -1388,7 +1515,7 @@
     },
   });
 
-  dash.calc('daily', {
+  calc('daily', {
     title: 'Orders per day',
     description: 'Order attempts and paid orders per calendar day for every subject and plan tier choice, with the 7-day average of paid orders.',
     inputs: ['orders'],
@@ -1417,7 +1544,7 @@
     },
   });
 
-  dash.calc('weekday', {
+  calc('weekday', {
     title: 'Orders by day of the week',
     description: 'Order attempts, paid orders and payment success by weekday (Monday first), for every month, subject and plan tier choice.',
     inputs: ['orders'],
@@ -1443,7 +1570,7 @@
     },
   });
 
-  dash.calc('weekly', {
+  calc('weekly', {
     title: 'Payment status by week',
     description: 'Orders per week (weeks start on Monday) split by payment status, for every subject and plan tier choice.',
     inputs: ['orders'],
@@ -1470,7 +1597,7 @@
     },
   });
 
-  dash.calc('retry', {
+  calc('retry', {
     title: 'Orders per student',
     description: 'Students grouped by how many orders they created (1, 2, 3, 4, 5 or more), and how many in each group paid, for every month, subject and plan tier choice.',
     inputs: ['orders'],
@@ -1501,7 +1628,7 @@
     },
   });
 
-  dash.calc('combos', {
+  calc('combos', {
     title: 'Cart combinations',
     description: 'Each exact cart (set of plans in one order) with its order attempts, paid orders, payment success and share of the month\'s paid orders, per month and for all months.',
     inputs: ['orders'],
@@ -1518,7 +1645,7 @@
     },
   });
 
-  dash.calc('addons', {
+  calc('addons', {
     title: 'Flexi add-ons',
     description: 'For each add-on type, paid orders that include it and its share of paid orders with a Flexi plan, per month and subject.',
     inputs: ['orders'],
@@ -1543,7 +1670,7 @@
     },
   });
 
-  dash.calc('highlights', {
+  calc('highlights', {
     title: 'Highlights',
     description: 'For each subject and tier choice: the month with the most paid orders, the month with the lowest payment success (20+ orders), and the plan with the most paid orders.',
     inputs: ['cube', 'plans'],
@@ -1569,7 +1696,8 @@
   // Each function works from the dispatch rows alone, so a dispatch sheet uploaded on the page runs through the same code (window.dspCalcs).
   const DSP_CALCS = {
     dsp_rows: (dispatch) => {
-      const asOf = dispatch.reduce((m, r) => [r.order_date, r.dispatch_date, r.delivery_date].reduce((x, d) => (d && d > x ? d : x), m), '');
+      // The sheet's latest date; a date-range view passes it in as sheet_as_of so days open still count to that day.
+      const asOf = (dispatch.find((r) => r.sheet_as_of) || {}).sheet_as_of || dispatch.reduce((m, r) => [r.order_date, r.dispatch_date, r.delivery_date].reduce((x, d) => (d && d > x ? d : x), m), '');
       const gap = (a, b) => (a && b ? Math.round((Date.parse(b) - Date.parse(a)) / 864e5) : null);
       const n = (v) => Number(v) || 0;
       return dispatch.map((r) => {
@@ -1681,13 +1809,13 @@
       return { k: r.k, exam: r.exam, item: r.item, count, packed, dispatch_today: Number(r.dispatch_today) || 0, pending: Number(r.pending) || 0, packed_share: count ? packed / count : null };
     }),
   };
-  dash.calc('dsp_rows', { title: 'Dispatch rows with days', description: 'Each school order with its delivery time (dispatch to delivery), days open (to the latest date in the sheet) and days from order to dispatch.', inputs: ['dispatch'], fn: DSP_CALCS.dsp_rows });
-  dash.calc('dsp_cube', { title: 'Dispatch by programme, courier and month', description: 'Orders, shipped, delivered, in transit (and over 7 days), on hold, delivery time and copies sent, for every programme, courier and order month, plus "all".', inputs: ['dsp_rows'], fn: DSP_CALCS.dsp_cube });
-  dash.calc('dsp_daily', { title: 'Shipments per day', description: 'Orders shipped per dispatch date and delivered per delivery date, with the 7-day average of deliveries, per programme and courier.', inputs: ['dsp_rows'], fn: DSP_CALCS.dsp_daily });
-  dash.calc('dsp_days', { title: 'Delivery time bands', description: 'Delivered orders by days from dispatch to delivery (0–2, 3–4, 5–7, 8–14, 15+), per programme, courier and month.', inputs: ['dsp_rows'], fn: DSP_CALCS.dsp_days });
-  dash.calc('dsp_regions', { title: 'Dispatch by region', description: 'Orders, shipped, delivered, in transit, not shipped, copies and delivery time per region (from the school code), per programme, courier and month.', inputs: ['dsp_rows'], fn: DSP_CALCS.dsp_regions });
-  dash.calc('dsp_open', { title: 'Shipments to follow up', description: 'Every order not delivered yet, plus returns (RTO), re-routed and lost shipments, with days open.', inputs: ['dsp_rows'], fn: DSP_CALCS.dsp_open });
-  dash.calc('dsp_material', { title: 'Study material packed share', description: 'The Total Order Summary rows with packed ÷ ordered.', inputs: ['dispatch_material'], fn: DSP_CALCS.dsp_material });
+  calc('dsp_rows', { title: 'Dispatch rows with days', description: 'Each school order with its delivery time (dispatch to delivery), days open (to the latest date in the sheet) and days from order to dispatch.', inputs: ['dispatch'], fn: DSP_CALCS.dsp_rows });
+  calc('dsp_cube', { title: 'Dispatch by programme, courier and month', description: 'Orders, shipped, delivered, in transit (and over 7 days), on hold, delivery time and copies sent, for every programme, courier and order month, plus "all".', inputs: ['dsp_rows'], fn: DSP_CALCS.dsp_cube });
+  calc('dsp_daily', { title: 'Shipments per day', description: 'Orders shipped per dispatch date and delivered per delivery date, with the 7-day average of deliveries, per programme and courier.', inputs: ['dsp_rows'], fn: DSP_CALCS.dsp_daily });
+  calc('dsp_days', { title: 'Delivery time bands', description: 'Delivered orders by days from dispatch to delivery (0–2, 3–4, 5–7, 8–14, 15+), per programme, courier and month.', inputs: ['dsp_rows'], fn: DSP_CALCS.dsp_days });
+  calc('dsp_regions', { title: 'Dispatch by region', description: 'Orders, shipped, delivered, in transit, not shipped, copies and delivery time per region (from the school code), per programme, courier and month.', inputs: ['dsp_rows'], fn: DSP_CALCS.dsp_regions });
+  calc('dsp_open', { title: 'Shipments to follow up', description: 'Every order not delivered yet, plus returns (RTO), re-routed and lost shipments, with days open.', inputs: ['dsp_rows'], fn: DSP_CALCS.dsp_open });
+  calc('dsp_material', { title: 'Study material packed share', description: 'The Total Order Summary rows with packed ÷ ordered.', inputs: ['dispatch_material'], fn: DSP_CALCS.dsp_material });
   if (typeof window !== 'undefined') {
     window.dspCalcs = {
       run: (dispatch, material) => {
@@ -1750,6 +1878,8 @@
 <script>
   const { p, enc, fmt, MONTHS, SHORT, fmtInt, fmtPct, tip, textWidth } = window.ito;
   const C = dash.colors;
+  // With a date range set, the order charts read results worked out for that range (departments.js); otherwise the dashboard's own.
+  const odata = (id) => (window.dateView ? window.dateView.orders(id) : dash.data(id));
   document.querySelectorAll('.ito').forEach((root) => {
     root.style.setProperty('--ito-accent', C[0]);
     root.style.setProperty('--ito-accent-2', C[1]);
@@ -1784,14 +1914,14 @@
   });
 
   const cubeRow = (key) => {
-    const c = dash.data('cube');
+    const c = odata('cube');
     return c.status === 'ok' ? c.data.find((r) => r.k === key) : null;
   };
   const keyNow = () => { const q = p(); return q.month + '|' + q.subject + '|' + q.tier; };
   const matchPlan = (plan, q) => { const w = plan.split(' '); return (q.subject === 'all' || w[0] === q.subject) && (q.tier === 'all' || w[1] === q.tier); };
 
   dash.draw('month-select', (sel) => {
-    const c = dash.data('cube');
+    const c = odata('cube');
     const months = c.status === 'ok' ? [...new Set(c.data.map((r) => r.month))].filter((m) => m !== 'all').sort() : [];
     sel.replaceChildren(new Option('All months', 'all'), ...months.map((m) => new Option(MONTHS[m] || m, m)));
     sel.value = p().month;
@@ -1802,7 +1932,8 @@
     const q = p();
     el.textContent = 'Showing ' + (q.month === 'all' ? 'all months' : MONTHS[q.month] || q.month) + ' · '
       + (q.subject === 'all' ? 'all subjects' : q.subject === 'Social' ? 'Social Studies' : q.subject) + ' · '
-      + (q.tier === 'all' ? 'all tiers' : q.tier);
+      + (q.tier === 'all' ? 'all tiers' : q.tier)
+      + (window.dateView && window.dateView.rangeText('orders') ? ' · ' + window.dateView.rangeText('orders') : '');
   });
 
   dash.draw('kpi', (el) => {
@@ -1819,12 +1950,12 @@
     const v = r ? r[el.dataset.field] : null;
     el.classList.toggle('up', v !== null && v !== undefined && v > 0);
     el.classList.toggle('down', v !== null && v !== undefined && v < 0);
-    el.textContent = v === null || v === undefined ? (p().month === 'all' ? 'Pick a month' : '—') : (el.dataset.fmt === 'pct' ? (v > 0 ? '+' : '') + fmtPct(v) : fmt(v, 'pp'));
+    el.textContent = v === null || v === undefined ? (p().month === 'all' && !dash.params().from && !dash.params().to ? 'Pick a month or dates' : '—') : (el.dataset.fmt === 'pct' ? (v > 0 ? '+' : '') + fmtPct(v) : fmt(v, 'pp'));
   });
 
   dash.draw('spark', (el) => {
     el.replaceChildren();
-    const c = dash.data('cube');
+    const c = odata('cube');
     if (c.status !== 'ok') return;
     const q = p(), f = el.dataset.field;
     const rows = c.data.filter((r) => r.subject === q.subject && r.tier === q.tier && r.month !== 'all' && r[f] !== null).sort((a, b) => (a.month < b.month ? -1 : 1));
@@ -1846,14 +1977,14 @@
     const q = p();
     const key = q.subject + '|' + q.tier;
     el.setAttribute('data-where', 'k=' + enc(key));
-    const d = dash.data('highlights');
+    const d = odata('highlights');
     const r = d.status === 'ok' ? d.data.find((x) => x.k === key) : null;
     el.textContent = r ? fmt(r[el.dataset.field], el.dataset.fmt) : '—';
   });
 
   dash.draw('trend', (el) => {
     el.replaceChildren();
-    const c = dash.data('cube');
+    const c = odata('cube');
     if (c.status !== 'ok') return;
     const q = p(), metric = q.metric;
     const isRate = metric === 'success';
@@ -1893,7 +2024,7 @@
 
   dash.draw('matrix', (el) => {
     el.replaceChildren();
-    const c = dash.data('cube');
+    const c = odata('cube');
     if (c.status !== 'ok') return;
     const q = p();
     const subjects = [['Maths', 'Maths'], ['Science', 'Science'], ['English', 'English'], ['GK', 'GK'], ['Computer', 'Computer'], ['Social', 'Social Studies'], ['JEE', 'JEE'], ['NEET', 'NEET']];
@@ -1928,7 +2059,7 @@
 
   dash.draw('daily', (el) => {
     el.replaceChildren();
-    const d = dash.data('daily');
+    const d = odata('daily');
     if (d.status !== 'ok') return;
     const q = p();
     const rows = d.data.filter((r) => r.subject === q.subject && r.tier === q.tier && (q.month === 'all' || r.month === q.month));
@@ -1959,7 +2090,7 @@
 
   dash.draw('weekday', (el) => {
     el.replaceChildren();
-    const d = dash.data('weekday');
+    const d = odata('weekday');
     if (d.status !== 'ok') return;
     const q = p();
     const rows = d.data.filter((r) => r.subject === q.subject && r.tier === q.tier);
@@ -2002,7 +2133,7 @@
 
   dash.draw('weekly', (el) => {
     el.replaceChildren();
-    const d = dash.data('weekly');
+    const d = odata('weekly');
     if (d.status !== 'ok') return;
     const q = p();
     const rows = d.data.filter((r) => r.subject === q.subject && r.tier === q.tier);
@@ -2084,7 +2215,7 @@
 
   dash.draw('retry', (el) => {
     el.replaceChildren();
-    const d = dash.data('retry');
+    const d = odata('retry');
     if (d.status !== 'ok') return;
     const q = p();
     const rows = d.data.filter((r) => r.month === q.month && r.subject === q.subject && r.tier === q.tier);
@@ -2125,7 +2256,7 @@
 
   dash.draw('plan-rows', (tbody) => {
     tbody.replaceChildren();
-    const d = dash.data('plans');
+    const d = odata('plans');
     if (d.status !== 'ok') return;
     const q = p();
     const k = planSort.key, dir = planSort.dir;
@@ -2151,7 +2282,7 @@
 
   dash.draw('combo-rows', (tbody) => {
     tbody.replaceChildren();
-    const d = dash.data('combos');
+    const d = odata('combos');
     if (d.status !== 'ok') return;
     const q = p();
     const rows = d.data.filter((r) => r.month === q.month && r.cart.split(' + ').some((pl) => matchPlan(pl, q))).sort((a, b) => b.paid - a.paid || b.attempts - a.attempts).slice(0, 15);
@@ -2187,7 +2318,7 @@
 
   dash.draw('carts', (el) => {
     el.replaceChildren();
-    const d = dash.data('carttype');
+    const d = odata('carttype');
     if (d.status !== 'ok') return;
     const q = p();
     const rows = d.data.filter((r) => r.month === q.month && r.attempts > 0);
@@ -2200,7 +2331,7 @@
 
   dash.draw('addons', (el) => {
     el.replaceChildren();
-    const d = dash.data('addons');
+    const d = odata('addons');
     if (d.status !== 'ok') return;
     const q = p();
     const rows = d.data.filter((r) => r.month === q.month && r.subject === q.subject);

@@ -330,10 +330,151 @@
   all('[data-goto]').forEach((b) => b.addEventListener('click', () => goTab(b.dataset.goto)));
   syncDspFilters(location.hash.slice(1));
 
+  // ---------- date ranges (Orders and Dispatch) ----------
+
+  const DAY = 864e5;
+  const isoAdd = (iso, n) => new Date(Date.parse(iso + 'T00:00:00Z') + n * DAY).toISOString().slice(0, 10);
+  const spanDays = (a, b) => Math.round((Date.parse(b) - Date.parse(a)) / DAY) + 1;
+  const inRange = (d, from, to) => !!d && (!from || d >= from) && (!to || d <= to);
+  const fmtShort = (iso) => d3.utcFormat('%-d %b')(new Date(iso + 'T00:00:00Z'));
+  const RANGE = {
+    orders: { from: 'from', to: 'to', reset: { month: 'all' } },
+    dispatch: { from: 'dfrom', to: 'dto', reset: { dmonth: 'all' } },
+  };
+  // The first and last date in the data, from the per-day results (small, and already loaded where the dates show).
+  RANGE.orders.bounds = () => {
+    const d = dash.data('daily');
+    if (d.status !== 'ok' || !d.data.length) return null;
+    const ds = d.data.filter((r) => r.subject === 'all' && r.tier === 'all').map((r) => r.date);
+    return ds.length ? { min: d3.min(ds), max: d3.max(ds) } : null;
+  };
+  RANGE.dispatch.bounds = () => {
+    const d = baseD('dsp_daily');
+    if (d.status !== 'ok' || !d.data.length) return null;
+    const ds = d.data.filter((r) => r.exam === 'all' && r.courier === 'all').map((r) => r.date);
+    return ds.length ? { min: d3.min(ds), max: d3.max(ds) } : null;
+  };
+  const rangeOf = (scope) => { const q = dash.params(); const c = RANGE[scope]; return { from: q[c.from] || '', to: q[c.to] || '' }; };
+  const rangeText = (scope) => { const r = rangeOf(scope); return r.from || r.to ? (r.from ? fmtShort(r.from) : 'start') + ' – ' + (r.to ? fmtDate(r.to) : 'latest') : ''; };
+  const presetRange = (preset, b) => {
+    if (!b || preset === 'all') return { from: null, to: null };
+    if (preset === 'month') return { from: b.max.slice(0, 8) + '01', to: b.max };
+    return { from: isoAdd(b.max, -(Number(preset) - 1)), to: b.max };
+  };
+  const PRESET = { orders: 'all', dispatch: 'all' };
+  const setRange = (scope, from, to, preset) => {
+    const c = RANGE[scope];
+    if (from && to && from > to) [from, to] = [to, from];
+    PRESET[scope] = preset || (from || to ? '' : 'all');
+    dash.setParams({ [c.from]: from || null, [c.to]: to || null, ...(from || to ? c.reset : {}) });
+  };
+
+  dash.draw('date-input', (el) => {
+    const scope = el.dataset.range, c = RANGE[scope];
+    if (!c) return;
+    const b = c.bounds();
+    if (b) { el.min = b.min; el.max = b.max; }
+    const key = c[el.dataset.end];
+    if (el !== document.activeElement) el.value = dash.params()[key] || '';
+    el.classList.toggle('is-set', !!el.value);
+    el.onchange = () => {
+      const r = rangeOf(scope);
+      if (!el.value) setRange(scope, el.dataset.end === 'from' ? '' : r.from, el.dataset.end === 'to' ? '' : r.to);
+      else if (el.validity.valid && /^\d{4}-\d{2}-\d{2}$/.test(el.value)) setRange(scope, el.dataset.end === 'from' ? el.value : r.from, el.dataset.end === 'to' ? el.value : r.to);
+    };
+    el.onblur = () => { el.value = dash.params()[key] || ''; };
+  });
+  all('.ito-field-presets[data-range] [data-preset]').forEach((b) => b.addEventListener('click', () => {
+    const scope = b.closest('[data-range]').dataset.range;
+    const r = presetRange(b.dataset.preset, RANGE[scope].bounds());
+    setRange(scope, r.from, r.to, b.dataset.preset);
+  }));
+  all('.dsp-basis').forEach((sel) => sel.addEventListener('change', () => dash.setParams({ dbasis: sel.value })));
+  dash.onData(() => {
+    const q = dash.params();
+    all('.ito-field-presets[data-range]').forEach((box) => {
+      const scope = box.dataset.range;
+      const r = rangeOf(scope);
+      const on = r.from || r.to ? PRESET[scope] : 'all';
+      box.querySelectorAll('[data-preset]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.preset === on)));
+    });
+    all('.dsp-basis').forEach((sel) => { sel.value = q.dbasis || 'order'; });
+    const ranged = (q.from || q.to) && (q.month || 'all') === 'all';
+    all('[data-period-label]').forEach((el) => { el.hidden = el.dataset.periodLabel !== (ranged ? 'range' : 'month'); });
+  });
+
+  // Every calc of the page (window.calcDefs), run in page order over the inputs given; calcs whose inputs are missing are skipped.
+  const runDefs = (inputs) => {
+    const res = { ...inputs };
+    Object.entries(window.calcDefs || {}).forEach(([id, def]) => {
+      if (!def.inputs.every((i) => res[i] !== undefined)) return;
+      try { res[id] = def.fn(...def.inputs.map((i) => res[i])); } catch (e) { console.error('calc ' + id, e); res[id] = []; }
+    });
+    return res;
+  };
+  const asResult = (data) => ({ status: 'ok', data: data || [], columns: data && data.length ? Object.keys(data[0]) : [], refreshing: false, meta: [] });
+  const DV = { okey: null, ores: null, dkey: null, dres: null };
+  window.dateView = {
+    rangeText,
+    orders(id) {
+      const q = dash.params();
+      if (!q.from && !q.to) return dash.data(id);
+      const src = dash.data('orders');
+      if (src.status !== 'ok') return { ...src, data: [] };
+      const key = q.from + '|' + q.to + '|' + src.data.length;
+      if (DV.okey !== key) {
+        const dateOf = (o) => String(o.date || '').slice(0, 10);
+        const res = runDefs({ orders: src.data.filter((o) => inRange(dateOf(o), q.from, q.to)) });
+        // The period before, of the same length, for the changes shown on the headline figures.
+        const ds = src.data.map(dateOf).filter(Boolean);
+        const from = q.from || d3.min(ds), to = q.to || d3.max(ds);
+        const pf = isoAdd(from, -spanDays(from, to)), pt = isoAdd(from, -1);
+        const prevRows = src.data.filter((o) => inRange(dateOf(o), pf, pt));
+        const prev = prevRows.length && window.calcDefs.cube ? new Map(window.calcDefs.cube.fn(prevRows).filter((r) => r.month === 'all').map((r) => [r.k, r])) : new Map();
+        (res.cube || []).forEach((r) => {
+          if (r.month !== 'all') return;
+          const p = prev.get(r.k);
+          r.paid_change = p && p.paid ? r.paid / p.paid - 1 : null;
+          r.success_change = p && p.success !== null && r.success !== null ? r.success - p.success : null;
+          r.prev_paid = p ? p.paid : null; r.prev_attempts = p ? p.attempts : null;
+        });
+        res.__prev = { from: pf, to: pt, rows: prevRows.length };
+        DV.okey = key; DV.ores = res;
+      }
+      return id === '__prev' ? DV.ores.__prev : asResult(DV.ores[id]);
+    },
+    dispatch(id) {
+      const q = dash.params();
+      if (!q.dfrom && !q.dto) return baseD(id);
+      let rows, material;
+      if (DSP.override) {
+        if (!DSP.rows) return baseD(id);
+        rows = DSP.rows; material = DSP.override.dsp_material || [];
+      } else {
+        const s = dash.data('dispatch');
+        if (s.status !== 'ok') return { ...s, data: [] };
+        const m = dash.data('dispatch_material');
+        rows = s.data; material = m.status === 'ok' ? m.data : [];
+      }
+      const basis = q.dbasis || 'order';
+      const key = [q.dfrom, q.dto, basis, rows.length, DSP.name].join('|');
+      if (DV.dkey !== key) {
+        const asOf = rows.reduce((mx, r) => [r.order_date, r.dispatch_date, r.delivery_date].reduce((x, d) => (d && d > x ? d : x), mx), '');
+        const field = basis === 'dispatch' ? 'dispatch_date' : basis === 'delivery' ? 'delivery_date' : 'order_date';
+        const sel = rows.filter((r) => inRange(r[field] || (basis === 'order' ? r.dispatch_date : ''), q.dfrom, q.dto)).map((r) => ({ ...r, sheet_as_of: asOf }));
+        DV.dres = window.dspCalcs.run(sel, material);
+        DV.dkey = key;
+      }
+      return asResult(DV.dres[id]);
+    },
+  };
+
   // ---------- Dispatch ----------
 
   const DSP = { override: null, rows: null, name: '', files: [], savedId: null, busy: false, error: '', errorKind: '', saveState: '', pick: 'open', query: '', sort: { key: 'days_open', dir: -1 }, rsort: { key: 'orders', dir: -1 }, rquery: '', saved: [], savedState: 'loading', confirmDel: null };
-  const D = (id) => (DSP.override ? { status: 'ok', data: DSP.override[id] || [] } : dash.data(id));
+  const baseD = (id) => (DSP.override ? { status: 'ok', data: DSP.override[id] || [] } : dash.data(id));
+  // With dates picked, every Dispatch figure is worked out again from the rows in that range (window.dateView.dispatch).
+  const D = (id) => window.dateView.dispatch(id);
   const dq = () => { const q = dash.params(); return { month: q.dmonth || 'all', courier: q.courier || 'all', exam: q.exam || 'all' }; };
   const dk = (q) => q.exam + '|' + q.courier + '|' + q.month;
   const cubeRow = (q) => { const c = D('dsp_cube'); return c.status === 'ok' ? c.data.find((r) => r.k === dk(q)) || null : null; };
@@ -344,12 +485,13 @@
   const STAGE_CLS = { Delivered: 'is-ok', 'In transit': 'is-warn', 'On hold': 'is-bad', 'Not shipped yet': 'is-bad' };
 
   const DSP_DRAWS = ['dsp-month-select', 'dsp-courier-select', 'dsp-scope', 'dsp-asof', 'dsp-kpi', 'dsp-pipeline', 'dsp-trend', 'dsp-courier-bars', 'dsp-courier-rows', 'dsp-daily', 'dsp-days',
-    'dsp-region-rows', 'dsp-units', 'dsp-material-rows', 'dsp-open-n', 'dsp-open-count', 'dsp-open-rows', 'dsp-source', 'dsp-source-name', 'dsp-error', 'dsp-saved'];
+    'dsp-region-rows', 'dsp-units', 'dsp-material-rows', 'dsp-open-n', 'dsp-open-count', 'dsp-open-rows', 'dsp-source', 'dsp-source-name', 'dsp-error', 'dsp-saved', 'ins-dispatch', 'date-input'];
   const dspSync = () => {
     all('[data-dsp-needs]').forEach((el) => {
       const k = el.dataset.dspNeeds;
       el.hidden = !(k === 'override' ? !!DSP.override : k === 'rows' ? !!DSP.rows : k === 'save' ? !!(DSP.override && !DSP.savedId && CAP.db && CAP.canEdit)
-        : k === 'noedit' ? !!(DSP.override && !DSP.savedId && CAP.db && !CAP.canEdit) : k === 'nomaterial' ? !!DSP.override && !(DSP.override.dsp_material || []).length : false);
+        : k === 'noedit' ? !!(DSP.override && !DSP.savedId && CAP.db && !CAP.canEdit) : k === 'nomaterial' ? !!DSP.override && !(DSP.override.dsp_material || []).length
+        : k === 'norange' ? !!(DSP.override && !DSP.rows && (dash.params().dfrom || dash.params().dto)) : false);
     });
     all('[data-dsp-msg]').forEach((el) => { const k = el.dataset.dspMsg; el.hidden = !(k === 'reading' ? DSP.busy : !!DSP.error && DSP.errorKind === k); });
     all('[data-dsp-save]').forEach((el) => { el.hidden = DSP.saveState !== el.dataset.dspSave; });
@@ -363,7 +505,7 @@
   dash.onData(dspSync);
 
   all('[data-exam-pick]').forEach((b) => b.addEventListener('click', () => dash.setParams({ exam: b.dataset.examPick })));
-  all('.dsp-reset').forEach((b) => b.addEventListener('click', () => dash.setParams({ dmonth: 'all', courier: 'all', exam: 'all' })));
+  all('.dsp-reset').forEach((b) => b.addEventListener('click', () => { PRESET.dispatch = 'all'; dash.setParams({ dmonth: 'all', courier: 'all', exam: 'all', dfrom: null, dto: null, dbasis: 'order' }); }));
   all('[data-open-pick]').forEach((b) => b.addEventListener('click', () => { DSP.pick = b.dataset.openPick; dspSync(); ['dsp-open-rows', 'dsp-open-count'].forEach((n) => dash.draw(n)); }));
   all('.dsp-open-search').forEach((inp) => inp.addEventListener('input', () => { DSP.query = inp.value.trim().toLowerCase(); ['dsp-open-rows', 'dsp-open-count'].forEach((n) => dash.draw(n)); }));
   all('.dsp-region-search').forEach((inp) => inp.addEventListener('input', () => { DSP.rquery = inp.value.trim().toLowerCase(); dash.draw('dsp-region-rows'); }));
@@ -398,7 +540,8 @@
   });
   dash.draw('dsp-scope', (el) => {
     const q = dq();
-    el.textContent = 'Showing ' + (q.month === 'all' ? 'all months' : R.monthLabel(q.month)) + ' · ' + (q.courier === 'all' ? 'all couriers' : q.courier) + ' · ' + examLabel(q.exam);
+    const dates = rangeText('dispatch');
+    el.textContent = 'Showing ' + (q.month === 'all' ? 'all months' : R.monthLabel(q.month)) + ' · ' + (q.courier === 'all' ? 'all couriers' : q.courier) + ' · ' + examLabel(q.exam) + (dates ? ' · ' + dates : '');
   });
   dash.draw('dsp-asof', (el) => {
     const r = cubeRow({ month: 'all', courier: 'all', exam: 'all' });
@@ -720,11 +863,11 @@
 
   // ---------- MIS and Support Team for Schools ----------
 
-  const newG = () => ({ busy: false, error: '', errorKind: '', files: [], sheetIdx: 0, table: null, a: null, name: '', fileNames: [], savedId: null, saveState: '', by: '', sum: '', group: null, hint: '', book: null, closed: false, saved: [], confirmDel: null });
+  const newG = () => ({ busy: false, error: '', errorKind: '', files: [], sheetIdx: 0, table: null, a: null, name: '', fileNames: [], savedId: null, saveState: '', by: '', sum: '', group: null, hint: '', book: null, closed: false, saved: [], confirmDel: null, view: null, full: null, from: '', to: '', preset: 'all', prev: null });
   const G = { mis: newG(), support: newG() };
   const scopeOf = (el) => { const s = el.closest('[data-dscope]'); return s && G[s.dataset.dscope] ? s.dataset.dscope : null; };
   const inScope = (d, sel) => document.querySelectorAll('[data-dscope="' + d + '"] ' + sel);
-  const GX_DRAWS = ['gx-name', 'gx-meta', 'gx-kpi', 'gx-col', 'gx-month', 'gx-status', 'gx-cats', 'gx-nums', 'gx-cols', 'gx-preview', 'gx-by', 'gx-sum', 'gx-group', 'gx-saved', 'gx-sheet', 'gx-error'];
+  const GX_DRAWS = ['gx-name', 'gx-meta', 'gx-kpi', 'gx-col', 'gx-month', 'gx-status', 'gx-cats', 'gx-nums', 'gx-cols', 'gx-preview', 'gx-by', 'gx-sum', 'gx-group', 'gx-saved', 'gx-sheet', 'gx-error', 'gx-date-input', 'gx-range-scope', 'ins-gx'];
   const gxSync = (d) => {
     const g = G[d], a = g.a;
     const has = { report: !!a, empty: !a, saved: !!g.savedId, local: !!g.table, status: !!(a && a.statusCol), duration: !!(a && a.closedCount), date: !!(a && a.dateCol), cats: !!(a && a.categories.length), nums: !!(a && a.numbers.length),
@@ -735,6 +878,7 @@
     inScope(d, '[data-gx-hint]').forEach((el) => { el.hidden = g.hint !== el.dataset.gxHint; });
     inScope(d, '[data-gx-save]').forEach((el) => { el.hidden = g.saveState !== el.dataset.gxSave; });
     inScope(d, '.gx-save').forEach((b) => { b.disabled = g.saveState === 'saving' || g.saveState === 'saved'; });
+    inScope(d, '.gx-presets [data-preset]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.preset === (g.from || g.to ? g.preset : 'all'))));
     inScope(d, '[data-gx-sheets]').forEach((el) => { el.hidden = !(g.files.length === 1 && g.files[0].sheets.length > 1 && !g.savedId); });
     inScope(d, '[data-gx-saved-state]').forEach((el) => { el.hidden = el.dataset.gxSavedState !== (CAP.db ? (g.saved.length ? 'list' : DSP.savedState === 'loading' ? 'loading' : 'empty') : DSP.savedState === 'loading' ? 'loading' : 'off'); });
   };
@@ -753,6 +897,7 @@
     g.name = names.length === 1 ? names[0] : names.length + ' files';
     g.fileNames = names;
     g.a = analyze(g.table);
+    g.full = g.a; g.view = g.table; g.from = ''; g.to = ''; g.preset = 'all'; g.prev = null;
     const book = g.files.length === 1 ? dispatchBook(g.files[0]) : null;
     if (book) { g.hint = 'dispatch'; g.book = book; }
     else if (R.isIto(g.table.columns)) g.hint = 'orders';
@@ -761,6 +906,55 @@
     g.sum = '';
     g.group = g.by ? R.groupBy(g.table, g.by, g.sum) : null;
   };
+  // Dates on an uploaded sheet: the report is worked out again for the rows whose date is in the range, and the period before is counted for comparison.
+  const gxRowDate = (g) => { const col = g.full.dateCol; return (r) => { const v = r[col]; return v === '' || v === null || v === undefined ? '' : R.toISODate(v); }; };
+  const gxApplyRange = (d) => {
+    const g = G[d];
+    if (!g.table || !g.full || !g.full.dateCol) return;
+    if (!g.from && !g.to) { g.view = g.table; g.a = g.full; g.prev = null; }
+    else {
+      const dateOf = gxRowDate(g);
+      g.view = { columns: g.table.columns, rows: g.table.rows.filter((r) => inRange(dateOf(r), g.from, g.to)) };
+      const a = analyze(g.view);
+      g.a = { ...a, dateCol: g.full.dateCol };
+      const from = g.from || g.full.from, to = g.to || g.full.to;
+      const pf = isoAdd(from, -spanDays(from, to)), pt = isoAdd(from, -1);
+      const prevRows = g.table.rows.filter((r) => inRange(dateOf(r), pf, pt));
+      const sc = g.full.statusCol;
+      g.prev = { from: pf, to: pt, rows: prevRows.length, done: sc ? prevRows.filter((r) => isDoneValue(r[sc])).length : null };
+    }
+    g.group = g.by && g.view ? R.groupBy(g.view, g.by, g.sum) : g.group;
+  };
+  const gxSetRange = (d, from, to, preset) => {
+    const g = G[d];
+    if (from && to && from > to) [from, to] = [to, from];
+    g.from = from || ''; g.to = to || ''; g.preset = preset || (from || to ? '' : 'all');
+    gxApplyRange(d);
+    gxRender(d);
+  };
+  dash.draw('gx-date-input', (el) => {
+    const d = scopeOf(el); const g = d && G[d];
+    if (!g || !g.full) { el.value = ''; return; }
+    if (g.full.from) { el.min = g.full.from; el.max = g.full.to; }
+    if (el !== document.activeElement) el.value = g[el.dataset.end] || '';
+    el.classList.toggle('is-set', !!el.value);
+    el.onchange = () => {
+      if (el.value && !(el.validity.valid && /^d{4}-d{2}-d{2}$/.test(el.value))) return;
+      gxSetRange(d, el.dataset.end === 'from' ? el.value : g.from, el.dataset.end === 'to' ? el.value : g.to);
+    };
+    el.onblur = () => { el.value = g[el.dataset.end] || ''; };
+  });
+  dash.draw('gx-range-scope', (el) => {
+    const d = scopeOf(el); const g = d && G[d];
+    if (!g || !g.a || !g.full) { el.textContent = '—'; return; }
+    el.textContent = g.from || g.to ? 'Showing ' + fmtInt(g.a.rows) + ' of ' + fmtInt(g.full.rows) + ' entries · ' + (g.from ? fmtShort(g.from) : 'start') + ' – ' + (g.to ? fmtDate(g.to) : 'latest') : 'Showing all ' + fmtInt(g.full.rows) + ' entries';
+  });
+  all('.gx-presets [data-preset]').forEach((b) => b.addEventListener('click', () => {
+    const d = scopeOf(b); const g = d && G[d];
+    if (!g || !g.full || !g.full.to) return;
+    const r = presetRange(b.dataset.preset, { min: g.full.from, max: g.full.to });
+    gxSetRange(d, r.from, r.to, b.dataset.preset);
+  }));
   const gxHandle = async (d, list) => {
     if (!list.length) return;
     const g = G[d];
@@ -860,8 +1054,9 @@
   });
   dash.draw('gx-preview', (table) => {
     const d = scopeOf(table); const g = d && G[d];
-    if (!g || !g.table) { table.replaceChildren(); return; }
-    fillTable(table, g.table.columns.map((c) => ({ key: c, label: c, type: 'text' })), g.table.rows.slice(0, 50));
+    const v = g && (g.view || g.table);
+    if (!v) { table.replaceChildren(); return; }
+    fillTable(table, v.columns.map((c) => ({ key: c, label: c, type: 'text' })), v.rows.slice(0, 50));
   });
   const groupCols = (g) => [{ key: 'group', label: g.by, type: 'text' }, { key: 'rows', label: 'Rows', type: 'int' }, { key: 'share', label: 'Share of rows', type: 'pct' }, ...(g.sum ? [{ key: 'total', label: 'Total ' + g.sum, type: 'num' }] : [])];
   const gxPick = (sel, first, filter, prop) => {
@@ -870,7 +1065,7 @@
     sel.replaceChildren(new Option(first, ''), ...cols.map((c) => new Option(c, c)));
     sel.value = g && cols.includes(g[prop]) ? g[prop] : '';
     sel.disabled = !(g && g.table);
-    sel.onchange = () => { g[prop] = sel.value; g.group = g.by && g.table ? R.groupBy(g.table, g.by, g.sum) : null; gxRender(d); };
+    sel.onchange = () => { g[prop] = sel.value; g.group = g.by && g.table ? R.groupBy(g.view || g.table, g.by, g.sum) : null; gxRender(d); };
   };
   dash.draw('gx-by', (sel) => gxPick(sel, 'Pick a column', (c) => c.type !== 'Number' || c.distinct <= 50, 'by'));
   dash.draw('gx-sum', (sel) => gxPick(sel, 'Count rows only', (c) => c.type === 'Number', 'sum'));
@@ -883,7 +1078,7 @@
   const gxSheets = (d) => {
     const g = G[d], a = g.a;
     const summary = [
-      ['Department', d === 'mis' ? 'MIS' : 'Support Team for Schools'], ['Source', g.fileNames.join(', ')], ['Rows', a.rows], ['Columns', a.columns],
+      ['Department', d === 'mis' ? 'MIS' : 'Support Team for Schools'], ['Source', g.fileNames.join(', ')], ...(g.from || g.to ? [['Dates picked', (g.from || 'start') + ' to ' + (g.to || 'latest')]] : []), ['Rows', a.rows], ['Columns', a.columns],
       ...(a.from ? [['Period', fmtDate(a.from) + ' – ' + fmtDate(a.to)], ['Dated by', a.dateCol]] : []),
       ...(a.statusCol ? [['Status column', a.statusCol], ['Completed / closed', a.done], ['Completed share', a.doneRate, 'pct'], ['Not completed', a.open]] : []),
       ...(a.closedCount ? [['Average days to close', Math.round(a.avgClose * 10) / 10], ['Median days to close', a.medianClose], ['Closed with both dates', a.closedCount]] : []),
@@ -896,7 +1091,8 @@
     if (a.numbers.length) sheets.push({ name: 'Numbers', columns: [{ key: 'column', label: 'Column', type: 'text' }, { key: 'filled', label: 'Filled', type: 'int' }, { key: 'total', label: 'Total', type: 'num' }, { key: 'avg', label: 'Average', type: 'num' }, { key: 'min', label: 'Lowest', type: 'num' }, { key: 'max', label: 'Highest', type: 'num' }], rows: a.numbers });
     sheets.push({ name: 'Columns', columns: R.COLS.profile, rows: a.profile });
     if (g.group && g.by) sheets.push({ name: 'By ' + g.by, columns: groupCols(g), rows: g.group });
-    if (g.table) sheets.push({ name: 'Data', columns: g.table.columns.map((c) => ({ key: c, label: c, type: 'auto' })), rows: g.table.rows });
+    const v = g.view || g.table;
+    if (v) sheets.push({ name: 'Data', columns: v.columns.map((c) => ({ key: c, label: c, type: 'auto' })), rows: v.rows });
     return sheets;
   };
   all('.gx-dl-xlsx').forEach((b) => b.addEventListener('click', () => { const d = scopeOf(b); if (d && G[d].a) save(fileStem(G[d].name) + '_report.xlsx', new Blob([R.toXlsx(gxSheets(d))])); }));
@@ -930,7 +1126,7 @@
   };
   const openSavedG = (d, doc) => {
     const g = G[d];
-    Object.assign(g, { files: [], table: null, error: '', hint: '', book: null, savedId: doc.id, saveState: '', name: doc.name || 'Saved report', fileNames: doc.files || [doc.name], a: doc.analysis });
+    Object.assign(g, { files: [], table: null, view: null, full: doc.analysis, from: '', to: '', prev: null, error: '', hint: '', book: null, savedId: doc.id, saveState: '', name: doc.name || 'Saved report', fileNames: doc.files || [doc.name], a: doc.analysis });
     g.by = doc.group ? doc.group.by : ''; g.sum = doc.group ? doc.group.sum || '' : ''; g.group = doc.group ? doc.group.rows : null;
     gxRender(d);
   };
@@ -963,6 +1159,145 @@
     else if (b.dataset.act === 'download') { openSavedG(d, doc); save(fileStem(g.name) + '_report.xlsx', new Blob([R.toXlsx(gxSheets(d))])); }
     else if (b.dataset.act === 'delete') deleteSaved(doc, g, () => dash.draw('gx-saved'));
   }));
+
+  // ---------- What stands out: findings written from the numbers in view ----------
+
+  // parts: plain strings, or [text] for a bold figure. tone: good, bad, warn or ''.
+  const insights = (ul, items) => {
+    ul.replaceChildren();
+    const list = items.filter(Boolean).slice(0, 8);
+    if (!list.length) list.push({ tone: '', parts: ['Nothing to report for this view.'] });
+    list.forEach(({ tone, parts }) => {
+      const li = document.createElement('li');
+      if (tone) li.className = 'is-' + tone;
+      const span = document.createElement('span');
+      parts.forEach((x) => { if (Array.isArray(x)) { const b = document.createElement('b'); b.textContent = x[0]; span.append(b); } else span.append(x); });
+      li.append(span);
+      ul.append(li);
+    });
+  };
+  const signed = (v, f) => (v > 0 ? '+' : '') + f(v);
+  const pts = (v) => signed(v * 100, d3.format('.1f')) + ' pts';
+  const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+  dash.draw('ins-orders', (ul) => {
+    const od = window.dateView.orders;
+    const q = dash.params();
+    const month = q.month || 'all', subject = q.subject || 'all', tier = q.tier || 'all';
+    const cube = od('cube');
+    if (cube.status !== 'ok') { ul.replaceChildren(); return; }
+    const r = cube.data.find((x) => x.k === month + '|' + subject + '|' + tier);
+    if (!r || !r.attempts) { insights(ul, [{ tone: '', parts: ['No orders in this view. Widen the dates or filters.'] }]); return; }
+    const out = [];
+    if (r.paid_change !== null && r.paid_change !== undefined) {
+      const ranged = (q.from || q.to) && month === 'all';
+      out.push({ tone: r.paid_change >= 0 ? 'good' : 'bad', parts: ['Paid orders ', [signed(r.paid_change, fmtPct)], ' ' + (ranged ? 'on the period before' : 'on the month before') + (r.prev_paid !== undefined && r.prev_paid !== null ? ' (' + fmtInt(r.paid) + ' vs ' + fmtInt(r.prev_paid) + ')' : '') + (r.success_change !== null && r.success_change !== undefined ? '; payment success ' : '.'), ...(r.success_change !== null && r.success_change !== undefined ? [[pts(r.success_change)], '.'] : [])] });
+    }
+    if (r.never_paid) out.push({ tone: 'bad', parts: [[fmtInt(r.never_paid)], ' students (' + fmtPct(r.never_paid / r.students) + ' of those at checkout) never paid. That is the win-back list in the order upload tab.'] });
+    if (r.attempts - r.paid > 0) out.push({ tone: r.lost > r.recovered ? 'warn' : 'good', parts: ['Of ' + fmtInt(r.attempts - r.paid) + ' unpaid orders, ', [fmtInt(r.recovered)], ' were paid later by the same student and ', [fmtInt(r.lost)], ' never were.'] });
+    const plans = od('plans');
+    if (plans.status === 'ok') {
+      const ps = plans.data.filter((x) => x.month === month && (subject === 'all' || x.subject === subject) && (tier === 'all' || x.tier === tier));
+      const top = ps.reduce((a, x) => (!a || x.paid > a.paid ? x : a), null);
+      const weak = ps.filter((x) => x.attempts >= 20).reduce((a, x) => (!a || x.success < a.success ? x : a), null);
+      if (top && top.paid) out.push({ tone: 'good', parts: ['Top plan: ', [top.plan], ', ' + fmtInt(top.paid) + ' paid orders (' + fmtPct(top.share) + ' of paid plans).'] });
+      if (weak && weak !== top && weak.success < (r.success || 1)) out.push({ tone: 'warn', parts: ['Weakest plan to pay: ', [weak.plan], ', only ' + fmtPct(weak.success) + ' of ' + fmtInt(weak.attempts) + ' orders paid.'] });
+    }
+    const daily = od('daily');
+    if (daily.status === 'ok') {
+      const ds = daily.data.filter((x) => x.subject === subject && x.tier === tier && (month === 'all' || x.month === month) && x.attempts);
+      const peak = ds.reduce((a, x) => (!a || x.attempts > a.attempts ? x : a), null);
+      if (peak) out.push({ tone: '', parts: ['Busiest day: ', [d3.utcFormat('%a %-d %b')(new Date(peak.date + 'T00:00:00Z'))], ' with ' + fmtInt(peak.attempts) + ' orders, ' + fmtInt(peak.paid) + ' paid.'] });
+    }
+    const wd = od('weekday');
+    if (wd.status === 'ok') {
+      const ws = wd.data.filter((x) => x.month === month && x.subject === subject && x.tier === tier && x.attempts >= 30);
+      if (ws.length >= 3) {
+        const best = ws.reduce((a, x) => (x.success > a.success ? x : a)), worst = ws.reduce((a, x) => (x.success < a.success ? x : a));
+        if (best.success - worst.success >= 0.05) out.push({ tone: '', parts: ['Orders pay best on ', [WEEKDAYS[best.weekday]], ' (' + fmtPct(best.success) + ') and worst on ', [WEEKDAYS[worst.weekday]], ' (' + fmtPct(worst.success) + '): a good day for reminders.'] });
+      }
+    }
+    insights(ul, out);
+  });
+
+  dash.draw('ins-dispatch', (ul) => {
+    const q = dq();
+    const cube = D('dsp_cube');
+    if (cube.status !== 'ok') { ul.replaceChildren(); return; }
+    const r = cubeRow(q);
+    if (!r || !r.orders) { insights(ul, [{ tone: '', parts: ['No school orders in this view. Widen the dates or filters.'] }]); return; }
+    const out = [];
+    const couriers = cube.data.filter((x) => x.exam === q.exam && x.month === q.month && x.courier !== 'all' && x.shipped > 0 && (q.courier === 'all' || x.courier === q.courier));
+    if (r.transit_late) {
+      const worst = couriers.reduce((a, x) => (!a || x.transit_late > a.transit_late ? x : a), null);
+      out.push({ tone: 'bad', parts: [[fmtInt(r.transit_late)], ' shipments have been in transit for over 7 days' + (worst && q.courier === 'all' && couriers.length > 1 ? '; ' : '.'), ...(worst && q.courier === 'all' && couriers.length > 1 ? [[worst.courier], ' holds ' + fmtInt(worst.transit_late) + ' of them.'] : [])] });
+    }
+    const timed = couriers.filter((x) => x.delivered >= 20 && x.avg_days !== null);
+    if (timed.length > 1) {
+      const fast = timed.reduce((a, x) => (x.avg_days < a.avg_days ? x : a)), slow = timed.reduce((a, x) => (x.avg_days > a.avg_days ? x : a));
+      out.push({ tone: '', parts: ['Fastest courier: ', [fast.courier], ' at ' + fmtv(fast.avg_days, 'days') + ' on average; slowest: ', [slow.courier], ' at ' + fmtv(slow.avg_days, 'days') + '.'] });
+    }
+    const regions = D('dsp_regions');
+    if (regions.status === 'ok') {
+      const rs = regions.data.filter((x) => x.k.startsWith(dk(q) + '|') && x.shipped >= 20);
+      const low = rs.reduce((a, x) => (!a || x.delivery_rate < a.delivery_rate ? x : a), null);
+      if (low && low.delivery_rate < (r.delivery_rate || 1)) out.push({ tone: 'warn', parts: ['Lowest delivery rate by region: ', [regionLabel(low.region)], ', ' + fmtPct(low.delivery_rate) + ' of ' + fmtInt(low.shipped) + ' shipped (' + fmtInt(low.in_transit) + ' in transit).'] });
+    }
+    const open = openRows('open', false);
+    if (open && open.length) {
+      const old = open.reduce((a, x) => ((x.days_open ?? -1) > (a.days_open ?? -1) ? x : a));
+      if (old.days_open !== null) out.push({ tone: 'bad', parts: ['Oldest open order: ', [old.school], ' (' + old.stage.toLowerCase() + (old.courier ? ', ' + old.courier : '') + '), open for ' + fmtInt(old.days_open) + ' days.'] });
+    }
+    if (r.pending_ship) out.push({ tone: 'warn', parts: [[fmtInt(r.pending_ship)], ' orders aren\'t shipped yet: ' + fmtInt(r.on_hold) + ' on hold and ' + fmtInt(r.not_shipped) + ' packed, waiting for a courier.'] });
+    if (r.issues) {
+      const most = couriers.reduce((a, x) => (!a || x.issues > a.issues ? x : a), null);
+      out.push({ tone: 'warn', parts: [[fmtInt(r.issues)], ' shipments were returned (RTO), re-routed or lost' + (most && most.issues && couriers.length > 1 ? '; most were with ' : '.'), ...(most && most.issues && couriers.length > 1 ? [[most.courier], ' (' + fmtInt(most.issues) + ').'] : [])] });
+    }
+    if (r.within_7 !== null) out.push({ tone: r.within_7 >= 0.8 ? 'good' : 'warn', parts: [[fmtPct(r.within_7)], ' of deliveries arrived within 7 days of dispatch (median ' + fmtv(r.median_days, 'days') + ').'] });
+    const mat = D('dsp_material');
+    if (mat.status === 'ok') {
+      const ms = mat.data.filter((x) => (q.exam === 'all' || x.exam === q.exam) && x.item !== 'School orders' && x.pending > 0);
+      const big = ms.reduce((a, x) => (!a || x.pending > a.pending ? x : a), null);
+      if (big) out.push({ tone: '', parts: ['Most material still to pack: ', [examLabel(big.exam) + ' ' + big.item.toLowerCase()], ', ' + fmtInt(big.pending) + ' copies (' + fmtv(big.packed_share, 'pct') + ' packed).'] });
+    }
+    insights(ul, out);
+  });
+
+  dash.draw('ins-gx', (ul) => {
+    const d = scopeOf(ul); const g = d && G[d]; const a = g && g.a;
+    if (!a) { ul.replaceChildren(); return; }
+    if (!a.rows) { insights(ul, [{ tone: '', parts: ['No entries in these dates.'] }]); return; }
+    const out = [];
+    const noun = d === 'support' ? 'requests' : 'entries';
+    if (g.prev && g.prev.rows) {
+      const ch = a.rows / g.prev.rows - 1;
+      out.push({ tone: '', parts: [[fmtInt(a.rows)], ' ' + noun + ' in these dates, ', [signed(ch, fmtPct)], ' on the period before (' + fmtInt(g.prev.rows) + ').'] });
+    } else if (a.byMonth.length >= 2) {
+      const [p, l] = a.byMonth.slice(-2);
+      out.push({ tone: '', parts: [[R.monthLabel(l.month)], ': ' + fmtInt(l.rows) + ' ' + noun + ', ', [signed(l.rows / p.rows - 1, fmtPct)], ' on ' + R.monthLabel(p.month) + '.'] });
+    }
+    if (a.byMonth.length >= 2) { const peak = a.byMonth.reduce((x, y) => (y.rows > x.rows ? y : x)); out.push({ tone: '', parts: ['Busiest month: ', [R.monthLabel(peak.month)], ' with ' + fmtInt(peak.rows) + ' ' + noun + '.'] }); }
+    if (a.statusCol && a.statusFilled) out.push({ tone: a.doneRate >= 0.8 ? 'good' : a.doneRate >= 0.5 ? 'warn' : 'bad', parts: [[fmtPct(a.doneRate)], ' completed and ', [fmtInt(a.open)], ' still open, going by ' + a.statusCol + '.'] });
+    // Open entries more than a week old, counted from the rows (not kept in a saved report).
+    const v = g.view || g.table;
+    if (v && a.statusCol && a.dateCol && a.to) {
+      const dateOf = gxRowDate(g);
+      const cutoff = isoAdd(g.full.to, -7);
+      const stale = v.rows.filter((r) => !isDoneValue(r[a.statusCol]) && txt(r[a.statusCol]) && dateOf(r) && dateOf(r) < cutoff).length;
+      if (stale) out.push({ tone: 'bad', parts: [[fmtInt(stale)], ' open ' + noun + ' are more than 7 days old.'] });
+    }
+    if (a.closedCount) out.push({ tone: '', parts: ['Average time to close: ', [fmtv(a.avgClose, 'days')], ' (median ' + fmtv(a.medianClose, 'days') + ', from ' + fmtInt(a.closedCount) + ' closed).'] });
+    a.categories.slice(0, 3).forEach((c) => {
+      const top = c.values.find((x) => x.value !== '(blank)' && !/^Other \(/.test(x.value));
+      if (top) out.push({ tone: '', parts: ['Most common ' + c.column + ': ', [top.value], ' (' + fmtPct(top.share) + ' of ' + noun + ').'] });
+    });
+    if (a.statusCol) {
+      const weak = a.categories.flatMap((c) => c.values.filter((x) => x.rows >= 10 && x.value !== '(blank)' && !/^Other \(/.test(x.value)).map((x) => ({ ...x, column: c.column })))
+        .reduce((m, x) => (!m || x.done_share < m.done_share ? x : m), null);
+      if (weak && weak.done_share < (a.doneRate || 0) - 0.1) out.push({ tone: 'warn', parts: ['Lowest completion: ', [weak.value], ' (' + weak.column + '), ' + fmtPct(weak.done_share) + ' of ' + fmtInt(weak.rows) + ' completed.'] });
+    }
+    insights(ul, out);
+  });
 
   dspSync();
   ['mis', 'support'].forEach(gxSync);

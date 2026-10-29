@@ -765,14 +765,17 @@
     else if (b.dataset.act === 'delete') deleteSaved(b.dataset.id);
   }));
 
-  // dashboard tab: download what the filters show
+  // dashboard tab: download what the filters show (and the date range, when one is set)
+  const odata = (id) => (window.dateView ? window.dateView.orders(id) : dash.data(id));
   const overviewXlsx = () => {
     const q = window.ito.p();
-    const cube = dash.data('cube'), plans = dash.data('plans'), carts = dash.data('carttype');
+    const cube = odata('cube'), plans = odata('plans'), carts = odata('carttype');
     if (cube.status !== 'ok' || plans.status !== 'ok' || carts.status !== 'ok') return;
     const now = cube.data.find((r) => r.k === q.month + '|' + q.subject + '|' + q.tier);
     if (!now) return;
+    const dp = dash.params();
     const view = [
+      ...(dp.from || dp.to ? [{ metric: 'Dates', value: (dp.from || 'start') + ' to ' + (dp.to || 'end'), type: 'text' }] : []),
       { metric: 'Month', value: monthLabel(q.month), type: 'text' },
       { metric: 'Subject', value: q.subject === 'all' ? 'All subjects' : q.subject === 'Social' ? 'Social Studies' : q.subject, type: 'text' },
       { metric: 'Plan tier', value: q.tier === 'all' ? 'All tiers' : q.tier, type: 'text' },
@@ -786,12 +789,12 @@
       { name: 'Plans', columns: COLS.plans, rows: planRows },
       { name: 'Cart types', columns: COLS.carts, rows: cartRows },
     ]);
-    const tag = [q.month === 'all' ? 'Jun-Oct_2026' : q.month, q.subject !== 'all' ? q.subject : '', q.tier !== 'all' ? q.tier : ''].filter(Boolean).join('_');
+    const tag = [dp.from || dp.to ? (dp.from || 'start') + '_to_' + (dp.to || 'end') : q.month === 'all' ? 'Jun-Oct_2026' : q.month, q.subject !== 'all' ? q.subject : '', q.tier !== 'all' ? q.tier : ''].filter(Boolean).join('_');
     save('ITO_orders_report_' + tag + '.xlsx', new Blob([book]));
   };
   const overviewPlansCsv = () => {
     const q = window.ito.p();
-    const plans = dash.data('plans');
+    const plans = odata('plans');
     if (plans.status !== 'ok') return;
     const rows = plans.data.filter((r) => r.month === q.month && (q.subject === 'all' || r.subject === q.subject) && (q.tier === 'all' || r.tier === q.tier)).sort((a, b) => b.paid - a.paid || b.attempts - a.attempts);
     save('ITO_plans_' + (q.month === 'all' ? 'Jun-Oct_2026' : q.month) + '.csv', toCSV(COLS.plans, rows));
@@ -799,7 +802,7 @@
   all('.ito-dl-overview').forEach((b) => b.addEventListener('click', overviewXlsx));
   all('.ito-dl-plans').forEach((b) => b.addEventListener('click', overviewPlansCsv));
   dash.onData(() => {
-    const ok = ['cube', 'plans', 'carttype'].every((id) => dash.data(id).status === 'ok');
+    const ok = ['cube', 'plans', 'carttype'].every((id) => odata(id).status === 'ok');
     all('.ito-dl-overview, .ito-dl-plans').forEach((b) => { b.disabled = !ok; });
   });
 
